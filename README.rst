@@ -4,6 +4,7 @@ installing::
 	cd cyclone_sse
 	virtualenv --no-site-packages env
 	. env/bin/activate
+	pip install -r requirements.txt
 
 to run server::
 
