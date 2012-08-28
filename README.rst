@@ -1,4 +1,5 @@
 installing::
+
 	git clone git@github.com:FZambia/cyclone_sse.git cyclone_sse/
 	cd cyclone_sse
 	virtualenv --no-site-packages env
@@ -6,7 +7,7 @@ installing::
 
 to run server::
 
-twistd -n cyclone -r server.Application -l 0.0.0.0 -p 8888
+	twistd -n cyclone -r server.Application -l 0.0.0.0 -p 8888
 
 in browser::
 
