@@ -28,18 +28,20 @@ class RedisMixin(object):
         RedisMixin._source = cyclone.redis.lazyConnectionPool(host, port, dbid, poolsize)
 
     def subscribe(self, client):
-      
-        channel = 'sse'
-        if channel not in RedisMixin._channels:
-            RedisMixin._channels[channel] = []
-            log.msg("Subscribing entire server to %s" % channel)
-            if "*" in channel:
-                RedisMixin._source.psubscribe(channel)
-            else:
-                RedisMixin._source.subscribe(channel)
-        
-        if client not in RedisMixin._channels[channel]:
-            RedisMixin._channels[channel].append(client)
+        channels = self.get_channels()
+        if not channels:
+            raise cyclone.web.HTTPError(400)
+        for channel in channels:
+            if channel not in RedisMixin._channels:
+                RedisMixin._channels[channel] = []
+                log.msg("Subscribing entire server to %s" % channel)
+                if "*" in channel:
+                    RedisMixin._source.psubscribe(channel)
+                else:
+                    RedisMixin._source.subscribe(channel)
+
+            if client not in RedisMixin._channels[channel]:
+                RedisMixin._channels[channel].append(client)
 
         log.msg("Client %s subscribed to %s" % \
                 (self.request.remote_ip, channel))
@@ -49,6 +51,14 @@ class RedisMixin(object):
             if client in clients:
                 log.msg('Unsubscribing client from channel %s' % channel)
                 clients.remove(client)
+            if len(clients) == 0:
+                if RedisMixin._source is not None:
+                    if "*" in channel:
+                        RedisMixin._source.punsubscribe(channel)
+                    else:
+                        RedisMixin._source.unsubscribe(channel)
+                    log.msg("Unsubscribing entire server from %s" % channel)
+                
 
     def broadcast(self, pattern, channel, message):
         print 'pattern: ', pattern
@@ -83,8 +93,8 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
         RedisMixin._source = None
 
 
-class CommentHandler(SSEHandler, RedisMixin):
-    
+class BroadcastHandler(SSEHandler, RedisMixin):
+
     sse_headers = {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache',
@@ -95,6 +105,10 @@ class CommentHandler(SSEHandler, RedisMixin):
     def initialize(self):
         for name, value in self.sse_headers.iteritems():
             self.set_header(name, value)
+
+    def get_channels(self):
+        channels = self.get_arguments('channels[]')
+        return channels
 
     def bind(self):
         print 'binding'
@@ -107,13 +121,7 @@ class CommentHandler(SSEHandler, RedisMixin):
         print 'unbinding'
         self.unsubscribe(self)
 
-    #def get(self):
-    #    headers = self._generate_headers()
-    #    self.write(headers)
-    #    self.flush()
-    #    #self.finish()
-
 
 RedisMixin.setup("127.0.0.1", 6379, 0, 10)
-Application = lambda: cyclone.web.Application([(r"/", CommentHandler)])
+Application = lambda: cyclone.web.Application([(r"/", BroadcastHandler)])
 
