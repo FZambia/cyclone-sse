@@ -11,6 +11,7 @@ from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.python import log
 
+
 class RedisMixin(object):
     _source = None
     _channels = {}
@@ -31,6 +32,7 @@ class RedisMixin(object):
         channels = self.get_channels()
         if not channels:
             raise cyclone.web.HTTPError(400)
+        print RedisMixin._channels
         for channel in channels:
             if channel not in RedisMixin._channels:
                 RedisMixin._channels[channel] = []
@@ -51,14 +53,6 @@ class RedisMixin(object):
             if client in clients:
                 log.msg('Unsubscribing client from channel %s' % channel)
                 clients.remove(client)
-            if len(clients) == 0:
-                if RedisMixin._source is not None:
-                    if "*" in channel:
-                        RedisMixin._source.punsubscribe(channel)
-                    else:
-                        RedisMixin._source.unsubscribe(channel)
-                    log.msg("Unsubscribing entire server from %s" % channel)
-                
 
     def broadcast(self, pattern, channel, message):
         print 'pattern: ', pattern
@@ -68,7 +62,7 @@ class RedisMixin(object):
         clients = RedisMixin._channels[channel]
         #chunks = (self._mbuffer + message.replace("\x1b[J", "")).split("\x1b[H")
         for client in clients:
-            client.sendEvent(str(message))
+            client.sendEvent(str(message)) 
 
 
 class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
@@ -124,4 +118,3 @@ class BroadcastHandler(SSEHandler, RedisMixin):
 
 RedisMixin.setup("127.0.0.1", 6379, 0, 10)
 Application = lambda: cyclone.web.Application([(r"/", BroadcastHandler)])
-
