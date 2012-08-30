@@ -3,9 +3,7 @@ import sys
 import uuid
 
 import cyclone.web
-import cyclone.escape
 import cyclone.redis
-import cyclone.sqlite
 from cyclone.sse import SSEHandler
 
 from twisted.internet import defer
