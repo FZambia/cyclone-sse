@@ -8,7 +8,16 @@ from cyclone.sse import SSEHandler
 
 from twisted.internet import defer
 from twisted.internet import reactor
+from twisted.internet import task
 from twisted.python import log
+
+
+class ExtendedSSEHandler(SSEHandler):
+    def sendPing(self):
+        # send comment line to keep connection with client opened as mentioned here:
+        # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
+        print 'ping'
+        self.transport.write(": %s\n\n" % 'sse ping')
 
 
 class RedisMixin(object):
@@ -16,10 +25,11 @@ class RedisMixin(object):
     _channels = {}
     _cache = []
     _cache_size = 200
+    _clients = []
     #_mbuffer = ""
 
     @classmethod
-    def setup(self, host, port, dbid, poolsize):
+    def setup(cls, host, port, dbid, poolsize):
         # PubSub client connection
         qf = cyclone.redis.SubscriberFactory()
         qf.maxDelay = 20
@@ -27,10 +37,16 @@ class RedisMixin(object):
         reactor.connectTCP(host, port, qf)
 
         # Normal client connection
-        RedisMixin._source = cyclone.redis.lazyConnectionPool(host, port, dbid, poolsize)
+        cls._source = cyclone.redis.lazyConnectionPool(host, port, dbid, poolsize)
+        
+        # 
+        cls.lc = task.LoopingCall(cls.ping)
+        cls.lc.start(30)
 
     def subscribe(self, client):
-        channels = self.get_channels()
+        RedisMixin._clients.append(client)
+
+        channels = client.get_channels()
         if not channels:
             raise cyclone.web.HTTPError(400)
         print RedisMixin._channels
@@ -47,9 +63,10 @@ class RedisMixin(object):
                 RedisMixin._channels[channel].append(client)
 
         log.msg("Client %s subscribed to %s" % \
-                (self.request.remote_ip, channel))
+                (client.request.remote_ip, channel))
         
-        self.send_cache(client)
+        RedisMixin.send_cache(client)
+
 
     def unsubscribe(self, client):
         empty = []
@@ -60,6 +77,8 @@ class RedisMixin(object):
             if len(clients) == 0:
                 empty.append(channel)
 
+        RedisMixin._clients.remove(client)
+
         for channel in empty:
             log.msg('Unsubscribing entire server from channel %s' % channel)
             if "*" in channel:
@@ -67,6 +86,11 @@ class RedisMixin(object):
             else:
                 RedisMixin._source.unsubscribe(channel)
             del RedisMixin._channels[channel]
+
+    @classmethod
+    def ping(cls):
+        for client in cls._clients:
+            client.sendPing()
 
     @classmethod
     def broadcast(cls, pattern, channel, message):
@@ -137,7 +161,7 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
         RedisMixin._source = None
 
 
-class BroadcastHandler(SSEHandler, RedisMixin):
+class BroadcastHandler(ExtendedSSEHandler, RedisMixin):
 
     sse_headers = {
         'Content-Type': 'text/event-stream; charset=utf-8',
