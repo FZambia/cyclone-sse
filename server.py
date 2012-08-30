@@ -1,5 +1,6 @@
 # coding: utf-8
 import sys
+import uuid
 
 import cyclone.web
 import cyclone.escape
@@ -15,7 +16,9 @@ from twisted.python import log
 class RedisMixin(object):
     _source = None
     _channels = {}
-    _mbuffer = ""
+    _cache = []
+    _cache_size = 200
+    #_mbuffer = ""
 
     @classmethod
     def setup(self, host, port, dbid, poolsize):
@@ -47,6 +50,8 @@ class RedisMixin(object):
 
         log.msg("Client %s subscribed to %s" % \
                 (self.request.remote_ip, channel))
+        
+        self.send_cache(client)
 
     def unsubscribe(self, client):
         empty = []
@@ -65,24 +70,51 @@ class RedisMixin(object):
                 RedisMixin._source.unsubscribe(channel)
             del RedisMixin._channels[channel]
 
-    def broadcast(self, pattern, channel, message):
+    @classmethod
+    def broadcast(cls, pattern, channel, message):
         print 'pattern: ', pattern
         print 'channel: ', channel
         print 'message: ', message
         if pattern == 'unsubscribe' or pattern == 'subscribe':
             return True
-        print RedisMixin._channels
-        clients = RedisMixin._channels[channel]
+        print cls._channels
+        clients = cls._channels[channel]
         #chunks = (self._mbuffer + message.replace("\x1b[J", "")).split("\x1b[H")
         for client in clients:
-            self.send_event(client, message)
+            cls.send_event(client, channel, message)
 
-
-    def send_event(self, client, message):
-        client.sendEvent(message)
+    @classmethod
+    def send_event(cls, client, channel, message, eid=None):
+        if eid is None:
+            eid = str(uuid.uuid4())
+            cls.update_cache(eid, channel, message)
+        client.sendEvent(message, eid=eid)
         if 'X-Requested-With' in client.request.headers:
             client.flush()
             client.finish()
+
+    @classmethod
+    def send_cache(cls, client):
+        last_event_id = client.request.headers.get('Last-Event-Id', None)
+        if last_event_id:
+            i = 0
+            for i, msg in enumerate(cls._cache, 1):
+                if msg['eid'] == last_event_id:
+                    break
+
+            for item in cls._cache[i:]:
+                if item['channel'] in client.get_channels():
+                    cls.send_event(client, item['channel'], item['message'], eid=item['eid'])
+
+    @classmethod
+    def update_cache(cls, eid, channel, message):
+        cls._cache.append({
+            'eid': eid,
+            'channel': channel,
+            'message': message
+        })
+        if len(cls._cache) > cls._cache_size:
+            cls._cache = cls._cache[-cls._cache_size:]
 
 
 class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
@@ -90,7 +122,7 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
         # When new messages are published to Redis channels or patterns,
         # they are broadcasted to all HTTP clients subscribed to those
         # channels.
-        RedisMixin.broadcast(self, pattern, channel, message)
+        RedisMixin.broadcast(pattern, channel, message)
 
     def connectionMade(self):
         RedisMixin._source = self
