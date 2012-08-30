@@ -69,13 +69,20 @@ class RedisMixin(object):
         print 'pattern: ', pattern
         print 'channel: ', channel
         print 'message: ', message
-        if pattern == 'unsubscribe':
+        if pattern == 'unsubscribe' or pattern == 'subscribe':
             return True
         print RedisMixin._channels
         clients = RedisMixin._channels[channel]
         #chunks = (self._mbuffer + message.replace("\x1b[J", "")).split("\x1b[H")
         for client in clients:
-            client.sendEvent(str(message))
+            self.send_event(client, message)
+
+
+    def send_event(self, client, message):
+        client.sendEvent(message)
+        if 'X-Requested-With' in client.request.headers:
+            client.flush()
+            client.finish()
 
 
 class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
@@ -118,6 +125,8 @@ class BroadcastHandler(SSEHandler, RedisMixin):
         return channels
 
     def bind(self):
+        import pprint
+        pprint.pprint(self.request.headers)
         print 'binding'
         headers = self._generate_headers()
         self.write(headers)
