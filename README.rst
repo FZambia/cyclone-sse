@@ -22,22 +22,22 @@ in browser::
 			
 			var url = 'http://localhost:8888/'+'?'+suffix;
 			
-	        $.eventsource({
-	            label: 'sys-sse',
-	            url: url,
-	            dataType: 'json',
-	            open: function() {
-	            	console.log('sse connection opened');
-	            },
-	            message: function(msg) {
-	            	console.log('sse message:');	
-	            	console.log(msg);	
-	            },
-	            error: function(msg) {
-	            	console.log('sse connection error:');
-	            	console.log(msg);
-	            }
-	        });
+			$.eventsource({
+			    label: 'sys-sse',
+			    url: url,
+			    dataType: 'json',
+			    open: function() {
+			    	console.log('sse connection opened');
+			    },
+			    message: function(msg) {
+			    	console.log('sse message:');	
+			    	console.log(msg);	
+			    },
+			    error: function(msg) {
+			    	console.log('sse connection error:');
+			    	console.log(msg);
+			    }
+			});
 		})
 	</script>
 
