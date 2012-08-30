@@ -49,20 +49,33 @@ class RedisMixin(object):
                 (self.request.remote_ip, channel))
 
     def unsubscribe(self, client):
+        empty = []
         for channel, clients in RedisMixin._channels.iteritems():
             if client in clients:
                 log.msg('Unsubscribing client from channel %s' % channel)
                 clients.remove(client)
+            if len(clients) == 0:
+                empty.append(channel)
+
+        for channel in empty:
+            log.msg('Unsubscribing entire server from channel %s' % channel)
+            if "*" in channel:
+                RedisMixin._source.punsubscribe(channel)
+            else:
+                RedisMixin._source.unsubscribe(channel)
+            del RedisMixin._channels[channel]
 
     def broadcast(self, pattern, channel, message):
         print 'pattern: ', pattern
         print 'channel: ', channel
         print 'message: ', message
+        if pattern == 'unsubscribe':
+            return True
         print RedisMixin._channels
         clients = RedisMixin._channels[channel]
         #chunks = (self._mbuffer + message.replace("\x1b[J", "")).split("\x1b[H")
         for client in clients:
-            client.sendEvent(str(message)) 
+            client.sendEvent(str(message))
 
 
 class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
