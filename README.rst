@@ -1,3 +1,5 @@
+inspired by `tornado_sse <https://github.com/truetug/tornado-sse>`_ by `Sergey Trofimov <https://github.com/truetug>`_
+
 installing::
 
 	git clone git@github.com:FZambia/cyclone_sse.git cyclone_sse/
