@@ -38,10 +38,10 @@ class RedisMixin(object):
 
         # Normal client connection
         cls._source = cyclone.redis.lazyConnectionPool(host, port, dbid, poolsize)
-        
+
         # 
         cls.lc = task.LoopingCall(cls.ping)
-        cls.lc.start(30)
+        cls.lc.start(15)
 
     def subscribe(self, client):
         RedisMixin._clients.append(client)
@@ -91,6 +91,9 @@ class RedisMixin(object):
     def ping(cls):
         for client in cls._clients:
             client.sendPing()
+            if 'X-Requested-With' in client.request.headers:
+                client.flush()
+                client.finish()
 
     @classmethod
     def broadcast(cls, pattern, channel, message):
