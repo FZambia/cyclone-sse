@@ -142,6 +142,7 @@
 								rretryprefix = /retry/,
 								retries;
 
+							console.log(streamData);
 							if ( jQuery.isArray( streamData ) ) {
 
 								for ( ; idx < length; idx++ ) {
@@ -158,7 +159,7 @@
 
 										} else {
 											tempdata = streamData[ idx ].split("data: ")[ 1 ];
-											alert(options.dataType);
+
 											// Convert `dataType` here
 											if ( options.dataType === "json" ) {
 												tempdata = jQuery.parseJSON( tempdata );
