@@ -4,7 +4,7 @@ Installing::
 
 	virtualenv --no-site-packages env
 	. env/bin/activate
-	pip install pip install git+https://github.com/FZambia/cyclone_sse.git
+	pip install git+https://github.com/FZambia/cyclone_sse.git
 
 
 To run server in development::
