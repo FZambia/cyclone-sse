@@ -47,32 +47,27 @@
 			            label: 'sys-sse',
 			            url: url,
 			            dataType: 'json',
-			            open: function() {
-			            	if (options.debug === true) {
-			            		console.log('sse connection opened');
-			            	}
-			                self.trigger('sse.open');
-			            },
-			            message: function(msg) {
-			            	if (options.debug === true) {
-			            		console.log(msg);	
-			            	}
-			            	// msg can be null in case of ping sse messages
-			            	if (msg) {
-			                	var event = 'sse.';
-								var type = msg[0];
-								var data = msg[1];
-			                	event += type;
-			                	console.log(event);
-			                	self.trigger(event, data);
-			               }
-			            },
-			            error: function(msg) {
-			            	if (options.debug === true) {
-			            		console.log('sse connection error:');
-			            		console.log(msg);
-			            	}
-			                self.trigger('sse.error', msg);
+						open: function() {
+							if (options.debug === true) {
+								console.log('sse connection opened');
+							}
+						    self.trigger('sse.open');
+						},
+						message: function(msg) {
+							if (options.debug === true) {
+								console.log(msg);	
+							}
+							// msg can be null in case of ping sse messages
+							if (msg) {
+						    	self.trigger('sse.message', msg);
+						    }
+						},
+						error: function(msg) {
+							if (options.debug === true) {
+								console.log('sse connection error:');
+								console.log(msg);
+							}
+						    self.trigger('sse.error', msg);
 			            }
 			        });
 			    }
