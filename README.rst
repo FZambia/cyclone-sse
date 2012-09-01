@@ -84,7 +84,7 @@ To check that everything work fine open your web browser console, then go to red
 You published message ``[1, 2, 3]`` into the channel ``base``.
 You should see an array in browser console (``debug`` option of sse jquery plugin must be ``true``).
 There is a moment to keep attention at: your message must be json encoded data - if you want to receive plain text then
-add ``'type': 'text'`` in sse initialization options.
+add ``'type': 'text'`` in jquery sse plugin initialization options.
 
 
 
