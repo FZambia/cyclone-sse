@@ -30,7 +30,7 @@ class ExtendedSSEHandler(SSEHandler):
     def sendPing(self):
         # send comment line to keep connection with client opened as mentioned here:
         # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
-        print 'ping'
+        log.msg('ping client %s' % self.request.remote_ip)
         self.transport.write(": %s\n\n" % 'sse ping')
 
 
@@ -62,7 +62,6 @@ class RedisMixin(object):
         channels = client.get_channels()
         if not channels:
             raise cyclone.web.HTTPError(400)
-        print RedisMixin._channels
         for channel in channels:
             if channel not in RedisMixin._channels:
                 RedisMixin._channels[channel] = []
@@ -110,15 +109,14 @@ class RedisMixin(object):
 
     @classmethod
     def broadcast(cls, pattern, channel, message):
-        print 'pattern: ', pattern
-        print 'channel: ', channel
-        print 'message: ', message
         if pattern == 'unsubscribe' or pattern == 'subscribe':
             return True
-        print cls._channels
         clients = cls._channels[channel]
-        for client in clients:
-            cls.send_event(client, channel, message)
+        if clients:
+            args = (str(len(clients)), pattern, channel, message)
+            log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
+            for client in clients:
+                cls.send_event(client, channel, message)
 
     @classmethod
     def send_event(cls, client, channel, message, eid=None):
@@ -194,8 +192,6 @@ class BroadcastHandler(ExtendedSSEHandler, RedisMixin):
         return channels
 
     def bind(self):
-        import pprint
-        pprint.pprint(self.request.headers)
         #headers = self._generate_headers()
         #self.write(headers)
         self.write(':\n')
