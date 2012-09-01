@@ -93,10 +93,16 @@
 				stream.cache[label].stream.addEventListener("message", function(event) {
 
 					var streamData = [];
+					var msg;
 
 					if ( stream.cache[ label ] ) {
-
-						streamData[ streamData.length ] = jQuery.parseJSON( event.data );
+						
+						if (options.dataType === 'json') {
+							msg = jQuery.parseJSON( event.data );
+						} else {
+							msg = event.data
+						}
+						streamData[ streamData.length ] = msg;
 
 						this.label = label;
 
@@ -142,7 +148,6 @@
 								rretryprefix = /retry/,
 								retries;
 
-							console.log(streamData);
 							if ( jQuery.isArray( streamData ) ) {
 
 								for ( ; idx < length; idx++ ) {
