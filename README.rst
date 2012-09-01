@@ -1,16 +1,29 @@
 inspired by `tornado_sse <https://github.com/truetug/tornado-sse>`_ by `Sergey Trofimov <https://github.com/truetug>`_
 
-installing::
+Installing::
 
-	git clone git@github.com:FZambia/cyclone_sse.git cyclone_sse/
-	cd cyclone_sse
 	virtualenv --no-site-packages env
 	. env/bin/activate
-	pip install -r requirements.txt
+	pip install pip install git+https://github.com/FZambia/cyclone_sse.git
 
-to run server::
 
-	twistd -n cyclone -r server.Application -l 0.0.0.0 -p 8888
+To run server in development::
+
+	twistd -n cyclone_sse
+
+
+Use ``-h`` option to see available options::
+
+	twistd -n cyclone_sse -h
+
+
+Due to the power of ``twistd``, this application can be easily deployed in
+production, with all the basic features of standard daemons::
+
+    twistd --uid=www-data --gid=www-data --reactor=epoll \
+           --logfile=/var/log/hello.log --pidfile=/var/run/hello.log \
+           cyclone__sse --port=80 --listen=0.0.0.0
+
 
 in browser::
 
