@@ -21,7 +21,7 @@ Due to the power of ``twistd``, this application can be easily deployed in
 production, with all the basic features of standard daemons::
 
     twistd --uid=www-data --gid=www-data --reactor=epoll \
-           --logfile=/var/log/hello.log --pidfile=/var/run/hello.log \
+           --logfile=/var/log/cyclone_sse.log --pidfile=/var/run/cyclone_sse.log \
            cyclone__sse --port=80 --listen=0.0.0.0
 
 
