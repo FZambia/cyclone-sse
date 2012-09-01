@@ -54,34 +54,24 @@ Client side
 
 in browser::
 
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-	<script type="text/javascript" src="jquery.eventsource.js"></script>
-	<script type="text/javascript">
-		$(function(){
-			channels = ['test1', 'test2'];
-			
-			suffix = $.param({'channels': channels})
-			
-			var url = 'http://localhost:8888/'+'?'+suffix;
-			
-			$.eventsource({
-			    label: 'sys-sse',
-			    url: url,
-			    dataType: 'json',
-			    open: function() {
-			    	console.log('sse connection opened');
-			    },
-			    message: function(msg) {
-			    	console.log('sse message:');	
-			    	console.log(msg);	
-			    },
-			    error: function(msg) {
-			    	console.log('sse connection error:');
-			    	console.log(msg);
-			    }
-			});
-		})
-	</script>
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+			<script type="text/javascript" src="https://raw.github.com/FZambia/cyclone_sse/master/media/jquery.eventsource.js"></script>
+			<script type="text/javascript" src="https://raw.github.com/FZambia/cyclone_sse/master/media/jquery.sse.js"></script>
+			<script type="text/javascript">
+				$(function(){
+					$('#sse-handler').sse({'debug':true});
+				})
+			</script>
+		</head>
+		<body>
+			<div id="sse-handler" data-sse-address="http://localhost:8888/" data-sse-channels="base"></div>
+		</body>
+	</html>
 
-
-
+	
+As you can see we use `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn>`_
+And it seems to work nice even with Internet Explorer using long polling.
