@@ -25,6 +25,16 @@ production, with all the basic features of standard daemons::
            cyclone__sse --port=8080 --listen=0.0.0.0
 
 
+If your main server in behind Nginx you should proxy SSE like this::
+
+    location /sse/ {
+        rewrite                 ^(.*)$ / break; # to root of our tornado
+        proxy_buffering         off; # to push immediately
+        proxy_pass              http://127.0.0.1:8888;
+    }
+
+
+
 in browser::
 
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
