@@ -1,4 +1,18 @@
 # coding: utf-8
+#
+# Copyright 2012 Alexandr Emelin
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 import sys
 import uuid
 
@@ -26,7 +40,6 @@ class RedisMixin(object):
     _cache = []
     _cache_size = 200
     _clients = []
-    #_mbuffer = ""
 
     @classmethod
     def setup(cls, host, port, dbid, poolsize):
@@ -104,7 +117,6 @@ class RedisMixin(object):
             return True
         print cls._channels
         clients = cls._channels[channel]
-        #chunks = (self._mbuffer + message.replace("\x1b[J", "")).split("\x1b[H")
         for client in clients:
             cls.send_event(client, channel, message)
 
@@ -184,16 +196,24 @@ class BroadcastHandler(ExtendedSSEHandler, RedisMixin):
     def bind(self):
         import pprint
         pprint.pprint(self.request.headers)
-        print 'binding'
-        headers = self._generate_headers()
-        self.write(headers)
+        #headers = self._generate_headers()
+        #self.write(headers)
+        self.write(':\n')
         self.flush()
         self.subscribe(self)
 
     def unbind(self):
-        print 'unbinding'
         self.unsubscribe(self)
 
 
-RedisMixin.setup("127.0.0.1", 6379, 0, 10)
-Application = lambda: cyclone.web.Application([(r"/", BroadcastHandler)])
+class App(cyclone.web.Application):
+    def __init__(self, settings):
+        handlers = [
+            (r"/", BroadcastHandler)
+        ]
+        RedisMixin.setup(settings["redis-host"],
+                         settings["redis-port"],
+                         settings["redis-dbid"],
+                         settings["redis-pool"])
+        cyclone.web.Application.__init__(self, handlers)
+
