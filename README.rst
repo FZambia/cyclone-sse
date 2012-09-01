@@ -1,10 +1,25 @@
 inspired by `tornado_sse <https://github.com/truetug/tornado-sse>`_ by `Sergey Trofimov <https://github.com/truetug>`_
 
+EventSource (or Server-Sent-Events) is a technology that allows your server to push data into client browser.
+Read this excellent articles for more information:
+
+`html5rocks.com <http://www.html5rocks.com/en/tutorials/eventsource/basics/>`_
+
+`html5doctor.com <http://html5doctor.com/server-sent-events/>`_
+
+
+The goal of this repo is to provide you a server for SSE event broadcasting and to give some useful information what to do on client side. 
+
+
 Installing::
 
 	virtualenv --no-site-packages env
 	. env/bin/activate
 	pip install git+https://github.com/FZambia/cyclone_sse.git
+
+
+Server side
+===========
 
 
 To run server in development::
@@ -34,6 +49,8 @@ If your main server in behind Nginx you should proxy SSE like this::
     }
 
 
+Client side
+===========
 
 in browser::
 
