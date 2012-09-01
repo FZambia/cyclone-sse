@@ -75,3 +75,18 @@ in browser::
 	
 As you can see we use `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_
 And it seems to work nice even with Internet Explorer using long polling.
+
+
+To check that everything work fine open your web browser console, then go to redis console (``redis-cli``) and type::
+	publish base '[1, 2, 3]'
+	
+You published message ``[1, 2, 3]`` into the channel ``base``.
+You should see an array in browser console (``debug`` option of sse jquery plugin must be ``true``).
+There is a moment to keep attention at: your message must be json encoded data - if you want to receive plain text then
+add ``'type': 'text'`` in sse initialization options.
+
+
+
+
+
+
