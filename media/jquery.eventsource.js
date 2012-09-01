@@ -158,7 +158,7 @@
 
 										} else {
 											tempdata = streamData[ idx ].split("data: ")[ 1 ];
-
+											alert(options.dataType);
 											// Convert `dataType` here
 											if ( options.dataType === "json" ) {
 												tempdata = jQuery.parseJSON( tempdata );
