@@ -78,6 +78,7 @@ And it seems to work nice even with Internet Explorer using long polling.
 
 
 To check that everything work fine open your web browser console, then go to redis console (``redis-cli``) and type::
+
 	publish base '[1, 2, 3]'
 	
 You published message ``[1, 2, 3]`` into the channel ``base``.
