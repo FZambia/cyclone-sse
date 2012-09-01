@@ -73,5 +73,5 @@ in browser::
 	</html>
 
 	
-As you can see we use `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn>`_
+As you can see we use `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_
 And it seems to work nice even with Internet Explorer using long polling.
