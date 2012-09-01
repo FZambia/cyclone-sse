@@ -2,8 +2,10 @@
     $.fn.extend({
         sse: function(options) {
             var defaults = {
-                sse_server: null,
+                address: null,
                 channels: [],
+                type: "json",
+                label: 'sse-channel',
                 debug: false
             }
 
@@ -12,10 +14,10 @@
             return this.each(function(){
                 var self = $(this);
 			    if($.eventsource) {
-			    	// detect sse server part
-			        var sse_server = self.attr('data-sse-server') || options.sse_server;
+			    	// detect sse server address part
+			        var sse_server = self.attr('data-sse-address') || options.address;
 			        if (!sse_server) {
-			        	console.log('no sse server specified')
+			        	console.log('no sse server address specified')
 			        	return false;
 			        }
 			        
@@ -44,9 +46,9 @@
 
 					// create EventSource object using Rick Waldron's jquery.eventsource.js
 			        $.eventsource({
-			            label: 'sys-sse',
+			            label: options.label,
 			            url: url,
-			            dataType: 'json',
+			            dataType: options.type,
 						open: function() {
 							if (options.debug === true) {
 								console.log('sse connection opened');
