@@ -26,135 +26,151 @@ from twisted.internet import task
 from twisted.python import log
 
 
-class ExtendedSSEHandler(SSEHandler):
-    def sendPing(self):
-        # send comment line to keep connection with client opened as mentioned here:
-        # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
-        log.msg('ping client %s' % self.request.remote_ip)
-        self.transport.write(": %s\n\n" % 'sse ping')
-
-
-class RedisMixin(object):
+class Broker(object):
     """
-    class, which goal is to keep state of connections and to
+    base class, which goal is to keep state of connections and to
     broadcast new messages to all clients of certain channel.
     """
-    _source = None
-    _channels = {}
-    _cache = []
-    _cache_size = 200
-    _clients = []
+    def __init__(self, settings):
+        self._source = None
+        self._channels = {}
+        self._cache = []
+        self._cache_size = 200
+        self._clients = []
+        self._settings = settings
+        self.setup(self._settings)
 
-    @classmethod
-    def setup(cls, host, port, dbid, poolsize):
-        # PubSub client connection
-        qf = cyclone.redis.SubscriberFactory()
-        qf.maxDelay = 20
-        qf.protocol = QueueProtocol
-        reactor.connectTCP(host, port, qf)
-
-        # Normal client connection
-        cls._source = cyclone.redis.lazyConnectionPool(host, port, dbid, poolsize)
-
+    def setup(self, settings):
+        self.connect(settings)
         # ping clients periodically to keep their connections alive
-        cls.lc = task.LoopingCall(cls.ping)
-        cls.lc.start(15)
+        self.lc = task.LoopingCall(self.ping)
+        self.lc.start(15)
 
-    @classmethod
-    def subscribe(cls, client):
-        cls._clients.append(client)
+    def connect(self, settings):
+        raise NotImplementedError('please, provide implementation for connect method')
+
+    def add_client(self, client):
+        self._clients.append(client)
 
         channels = client.get_channels()
         if not channels:
             raise cyclone.web.HTTPError(400)
         for channel in channels:
-            if channel not in RedisMixin._channels:
-                cls._channels[channel] = []
+            if channel not in self._channels:
+                self._channels[channel] = []
                 log.msg("Subscribing entire server to %s" % channel)
-                if "*" in channel:
-                    cls._source.psubscribe(channel)
-                else:
-                    cls._source.subscribe(channel)
+                self.subscribe(channel)
 
-            if client not in cls._channels[channel]:
-                cls._channels[channel].append(client)
+            if client not in self._channels[channel]:
+                self._channels[channel].append(client)
 
         log.msg("Client %s subscribed to %s" % \
                 (client.request.remote_ip, channel))
-        
-        cls.send_cache(client)
 
-    @classmethod
-    def unsubscribe(cls, client):
+        self.send_cache(client)
+
+    def remove_client(self, client):
+        self._clients.remove(client)
+   
         empty = []
-        for channel, clients in cls._channels.iteritems():
+        for channel, clients in self._channels.iteritems():
             if client in clients:
                 log.msg('Unsubscribing client from channel %s' % channel)
                 clients.remove(client)
             if len(clients) == 0:
                 empty.append(channel)
 
-        cls._clients.remove(client)
-
         for channel in empty:
             log.msg('Unsubscribing entire server from channel %s' % channel)
-            if "*" in channel:
-                cls._source.punsubscribe(channel)
-            else:
-                cls._source.unsubscribe(channel)
-            del cls._channels[channel]
+            self.unsubscribe(channel)
+            del self._channels[channel]
 
-    @classmethod
-    def ping(cls):
-        for client in cls._clients:
+    def subscribe(self, channel):
+        raise NotImplementedError('please, provide implementation for subscribe method')
+
+    def unsubscribe(self, channel):
+        raise NotImplementedError('please, provide implementation for unsubscribe method')
+
+    def ping(self):
+        for client in self._clients:
             client.sendPing()
             if 'X-Requested-With' in client.request.headers:
                 client.flush()
                 client.finish()
 
-    @classmethod
-    def broadcast(cls, pattern, channel, message):
-        if pattern == 'unsubscribe' or pattern == 'subscribe':
+    def broadcast(self, pattern, channel, message):
+        """
+        pass
+        """
+        if self.is_pattern_blocked(pattern):
             return True
-        clients = cls._channels[channel]
+        clients = self._channels[channel]
         if clients:
             args = (str(len(clients)), pattern, channel, message)
             log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
             for client in clients:
-                cls.send_event(client, channel, message)
+                self.send_event(client, channel, message)
 
-    @classmethod
-    def send_event(cls, client, channel, message, eid=None):
+    def is_pattern_blocked(self, pattern):
+        return False
+
+    def send_event(self, client, channel, message, eid=None):
         if eid is None:
             eid = str(uuid.uuid4())
-            cls.update_cache(eid, channel, message)
+            self.update_cache(eid, channel, message)
         client.sendEvent(message, eid=eid)
         if 'X-Requested-With' in client.request.headers:
             client.flush()
             client.finish()
 
-    @classmethod
-    def send_cache(cls, client):
+    def send_cache(self, client):
         last_event_id = client.request.headers.get('Last-Event-Id', None)
         if last_event_id:
             i = 0
-            for i, msg in enumerate(cls._cache, 1):
+            for i, msg in enumerate(self._cache, 1):
                 if msg['eid'] == last_event_id:
                     break
 
-            for item in cls._cache[i:]:
+            for item in self._cache[i:]:
                 if item['channel'] in client.get_channels():
-                    cls.send_event(client, item['channel'], item['message'], eid=item['eid'])
+                    self.send_event(client, item['channel'], item['message'], eid=item['eid'])
 
-    @classmethod
-    def update_cache(cls, eid, channel, message):
-        cls._cache.append({
+    def update_cache(self, eid, channel, message):
+        self._cache.append({
             'eid': eid,
             'channel': channel,
             'message': message
         })
-        if len(cls._cache) > cls._cache_size:
-            cls._cache = cls._cache[-cls._cache_size:]
+        if len(self._cache) > self._cache_size:
+            self._cache = self._cache[-self._cache_size:]
+
+
+class RedisBroker(Broker):
+    """
+    listens Redis channels and broadcasts to clients
+    """
+    def connect(self, settings):
+        # PubSub client connection
+        qf = cyclone.redis.SubscriberFactory()
+        qf.broker = self
+        qf.maxDelay = 20
+        qf.protocol = QueueProtocol
+        reactor.connectTCP(settings["redis-host"], settings["redis-port"], qf) 
+
+    def is_pattern_blocked(self, pattern):
+        return pattern in ['unsubscribe', 'subscribe']
+
+    def subscribe(self, channel):
+        if "*" in channel:
+            self._source.psubscribe(channel)
+        else:
+            self._source.subscribe(channel)
+
+    def unsubscribe(self, channel):
+        if "*" in channel:
+            self._source.punsubscribe(channel)
+        else:
+            self._source.unsubscribe(channel)
 
 
 class QueueProtocol(cyclone.redis.SubscriberProtocol):
@@ -162,21 +178,28 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol):
         # When new messages are published to Redis channels or patterns,
         # they are broadcasted to all HTTP clients subscribed to those
         # channels.
-        RedisMixin.broadcast(pattern, channel, message)
+        self.factory.broker.broadcast(pattern, channel, message)
 
     def connectionMade(self):
-        RedisMixin._source = self
-
+        self.factory.broker._source = self
         # If we lost connection with Redis during operation, we
         # re-subscribe to all channels once the connection is re-established.
-        for channel in RedisMixin._channels:
+        for channel in self.factory.broker._channels:
             if "*" in channel:
-                self.psubscribe(channel)
+                self.factory.broker.psubscribe(channel)
             else:
-                self.subscribe(channel)
+                self.factory.broker.subscribe(channel)
 
     def connectionLost(self, why):
-        RedisMixin._source = None
+        self.factory.broker._source = None
+
+
+class ExtendedSSEHandler(SSEHandler):
+    def sendPing(self):
+        # send comment line to keep connection with client opened as mentioned here:
+        # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
+        log.msg('ping client %s' % self.request.remote_ip)
+        self.transport.write(": %s\n\n" % 'sse ping')
 
 
 class BroadcastHandler(ExtendedSSEHandler):
@@ -197,25 +220,28 @@ class BroadcastHandler(ExtendedSSEHandler):
         return channels
 
     def bind(self):
+        """
+        called when new connection established 
+        """
         #headers = self._generate_headers()
         #self.write(headers)
         log.msg(self.request.headers)
         self.write(':\n')
         self.flush()
-        RedisMixin.subscribe(self)
+        self.application.broker.add_client(self)
 
     def unbind(self):
-        RedisMixin.unsubscribe(self)
+        """
+        called when connection with client lost
+        """
+        self.application.broker.remove_client(self)
 
 
 class App(cyclone.web.Application):
-    def __init__(self, settings):
+    def __init__(self, broker, settings):
         handlers = [
             (r"/", BroadcastHandler)
         ]
-        RedisMixin.setup(settings["redis-host"],
-                         settings["redis-port"],
-                         settings["redis-dbid"],
-                         settings["redis-pool"])
+        self.broker = RedisBroker(settings)
         cyclone.web.Application.__init__(self, handlers)
 

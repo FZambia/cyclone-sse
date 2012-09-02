@@ -37,8 +37,6 @@ class Options(usage.Options):
         ["listen", "l", "127.0.0.1", "interface to listen on"],
         ["redis-host", None, "127.0.0.1", "redis host"],
         ["redis-port", None, 6379, "redis port", int],
-        ["redis-dbid", None, 0, "redis database id", int],
-        ["redis-pool", None, 10, "redis pool size", int],
         ["use-ssl", None, 0, "use ssl", int],
         ["ssl-port", None, 8443, "port to listen on for ssl", int],
         ["ssl-listen", None, "127.0.0.1", "interface to listen on for ssl"],
@@ -60,7 +58,7 @@ class ServiceMaker(object):
         s = None
 
         # http
-        s = internet.TCPServer(options["port"], server.App(options),
+        s = internet.TCPServer(options["port"], server.App(server.RedisBroker, options),
                                interface=options["listen"])
         s.setServiceParent(srv)
 
