@@ -52,52 +52,53 @@ class RedisMixin(object):
         # Normal client connection
         cls._source = cyclone.redis.lazyConnectionPool(host, port, dbid, poolsize)
 
-        # 
+        # ping clients periodically to keep their connections alive
         cls.lc = task.LoopingCall(cls.ping)
         cls.lc.start(15)
 
-    def subscribe(self, client):
-        RedisMixin._clients.append(client)
+    @classmethod
+    def subscribe(cls, client):
+        cls._clients.append(client)
 
         channels = client.get_channels()
         if not channels:
             raise cyclone.web.HTTPError(400)
         for channel in channels:
             if channel not in RedisMixin._channels:
-                RedisMixin._channels[channel] = []
+                cls._channels[channel] = []
                 log.msg("Subscribing entire server to %s" % channel)
                 if "*" in channel:
-                    RedisMixin._source.psubscribe(channel)
+                    cls._source.psubscribe(channel)
                 else:
-                    RedisMixin._source.subscribe(channel)
+                    cls._source.subscribe(channel)
 
-            if client not in RedisMixin._channels[channel]:
-                RedisMixin._channels[channel].append(client)
+            if client not in cls._channels[channel]:
+                cls._channels[channel].append(client)
 
         log.msg("Client %s subscribed to %s" % \
                 (client.request.remote_ip, channel))
         
-        RedisMixin.send_cache(client)
+        cls.send_cache(client)
 
-
-    def unsubscribe(self, client):
+    @classmethod
+    def unsubscribe(cls, client):
         empty = []
-        for channel, clients in RedisMixin._channels.iteritems():
+        for channel, clients in cls._channels.iteritems():
             if client in clients:
                 log.msg('Unsubscribing client from channel %s' % channel)
                 clients.remove(client)
             if len(clients) == 0:
                 empty.append(channel)
 
-        RedisMixin._clients.remove(client)
+        cls._clients.remove(client)
 
         for channel in empty:
             log.msg('Unsubscribing entire server from channel %s' % channel)
             if "*" in channel:
-                RedisMixin._source.punsubscribe(channel)
+                cls._source.punsubscribe(channel)
             else:
-                RedisMixin._source.unsubscribe(channel)
-            del RedisMixin._channels[channel]
+                cls._source.unsubscribe(channel)
+            del cls._channels[channel]
 
     @classmethod
     def ping(cls):
@@ -152,7 +153,7 @@ class RedisMixin(object):
             cls._cache = cls._cache[-cls._cache_size:]
 
 
-class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
+class QueueProtocol(cyclone.redis.SubscriberProtocol):
     def messageReceived(self, pattern, channel, message):
         # When new messages are published to Redis channels or patterns,
         # they are broadcasted to all HTTP clients subscribed to those
@@ -164,7 +165,7 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
 
         # If we lost connection with Redis during operation, we
         # re-subscribe to all channels once the connection is re-established.
-        for channel in self._channels:
+        for channel in RedisMixin._channels:
             if "*" in channel:
                 self.psubscribe(channel)
             else:
@@ -174,7 +175,7 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol, RedisMixin):
         RedisMixin._source = None
 
 
-class BroadcastHandler(ExtendedSSEHandler, RedisMixin):
+class BroadcastHandler(ExtendedSSEHandler):
 
     sse_headers = {
         'Content-Type': 'text/event-stream; charset=utf-8',
@@ -194,12 +195,13 @@ class BroadcastHandler(ExtendedSSEHandler, RedisMixin):
     def bind(self):
         #headers = self._generate_headers()
         #self.write(headers)
+        log.msg(self.request.headers)
         self.write(':\n')
         self.flush()
-        self.subscribe(self)
+        RedisMixin.subscribe(self)
 
     def unbind(self):
-        self.unsubscribe(self)
+        RedisMixin.unsubscribe(self)
 
 
 class App(cyclone.web.Application):
