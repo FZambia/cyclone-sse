@@ -35,6 +35,10 @@ class ExtendedSSEHandler(SSEHandler):
 
 
 class RedisMixin(object):
+    """
+    class, which goal is to keep state of connections and to
+    broadcast new messages to all clients of certain channel.
+    """
     _source = None
     _channels = {}
     _cache = []
