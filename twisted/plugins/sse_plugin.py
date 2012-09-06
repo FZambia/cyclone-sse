@@ -22,6 +22,7 @@ from twisted.plugin import IPlugin
 from twisted.python import usage
 from zope.interface import implements
 from cyclone_sse import server
+from twisted.python import log
 
 try:
     from twisted.internet import ssl
