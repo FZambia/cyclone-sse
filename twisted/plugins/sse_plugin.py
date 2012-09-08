@@ -45,7 +45,7 @@ class Options(usage.Options):
         ["ssl-app", None, None, "ssl application (same as --app)"],
         ["ssl-appopts", None, None, "arguments to the ssl application"],
 
-        ["use-amqp", None, 0, "use AMQP broker as publish provider"],
+        ["broker", None, "redis", "publish provider"],
 
         ["redis-host", None, "127.0.0.1", "redis host"],
         ["redis-port", None, 6379, "redis port", int],

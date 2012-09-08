@@ -71,12 +71,20 @@ class BroadcastHandler(ExtendedSSEHandler):
         self.application.broker.remove_client(self)
 
 
+class StatsHandler(cyclone.web.RequestHandler):
+
+    def get(self):
+        self.write(str([(k, len(v)) for k, v in self.application.broker._channels.iteritems()]))
+        self.finish()
+
+
 class App(cyclone.web.Application):
     def __init__(self, settings):
         handlers = [
-            (r"/", BroadcastHandler)
+            (r"/", BroadcastHandler),
+            (r"/stats", StatsHandler),
         ]
-        if settings["use-amqp"]:
+        if settings["broker"] == 'amqp':
             broker = AmqpBroker
         else:
             broker = RedisBroker
