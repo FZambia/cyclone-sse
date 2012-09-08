@@ -77,5 +77,6 @@ class App(cyclone.web.Application):
             (r"/", BroadcastHandler)
         ]
         self.broker = AmqpBroker(settings)
+        self.broker._channels['base'] = []
         cyclone.web.Application.__init__(self, handlers)
 

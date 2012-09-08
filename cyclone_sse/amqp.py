@@ -18,6 +18,10 @@ class AmqpSubscriberProtocol(AMQClient):
 
     def connect_success(self, channel):
         self.connected = 1
+        self.channelEstablished()
+        
+    def channelEstablished(self):
+        print 'channel established'
 
     def connection_error(self, err):
         print err
@@ -53,7 +57,7 @@ class AmqpSubscriberProtocol(AMQClient):
     @defer.inlineCallbacks
     def consume(self, queue_name):
         try:
-            self.chan.exchange_declare(exchange="test", type="fanout")
+            self.chan.exchange_declare(exchange="test-direct", type="direct")
         except Exception, e:
             print e
             print 'error in exchange declare'
@@ -67,23 +71,23 @@ class AmqpSubscriberProtocol(AMQClient):
             defer.returnValue(None)
 
         try:
-            self.chan.queue_bind(exchange="test", queue=queue_name)
+            self.chan.queue_bind(exchange="test-direct", queue=queue_name, routing_key=queue_name)
         except Exception, e:
             print e
             print 'error in exchange declare'
             defer.returnValue(None)    
 
         try:
-            self.chan.basic_consume(queue=queue_name, no_ack=True, consumer_tag='testtag')
+            self.chan.basic_consume(queue=queue_name, no_ack=True, consumer_tag=queue_name)
         except Exception, e:
             print e
             print 'error consuming queue'
             defer.returnValue(None)
     
-        queue = yield self.queue('testtag')
+        queue = yield self.queue(queue_name)
       
         while True:
-            print 'consuming'
+            print 'consuming %s' % queue_name
             msg = yield queue.get()
             self.messageReceived(None, msg.routing_key, msg.content.body)
 

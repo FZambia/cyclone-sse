@@ -35,6 +35,10 @@ class Broker(object):
     def connect(self, settings):
         raise NotImplementedError('please, provide implementation for connect method')
 
+    def _subscribe(self, channel):
+        log.msg("Subscribing entire server to %s" % channel)
+        return self.subscribe(channel)
+
     def add_client(self, client):
         self._clients.append(client)
 
@@ -44,8 +48,7 @@ class Broker(object):
         for channel in channels:
             if channel not in self._channels:
                 self._channels[channel] = []
-                log.msg("Subscribing entire server to %s" % channel)
-                self.subscribe(channel)
+                self._subscribe(channel)
 
             if client not in self._channels[channel]:
                 self._channels[channel].append(client)
@@ -91,9 +94,9 @@ class Broker(object):
         if self.is_pattern_blocked(pattern):
             return True
         clients = self._channels[channel]
+        args = (str(len(clients)), pattern, channel, message)
+        log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
         if clients:
-            args = (str(len(clients)), pattern, channel, message)
-            log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
             for client in clients:
                 self.send_event(client, channel, message)
 
@@ -143,10 +146,7 @@ class RedisBroadcastProtocol(cyclone.redis.SubscriberProtocol):
         # If we lost connection with Redis during operation, we
         # re-subscribe to all channels once the connection is re-established.
         for channel in self.factory.broker._channels:
-            if "*" in channel:
-                self.factory.broker.psubscribe(channel)
-            else:
-                self.factory.broker.subscribe(channel)
+            self.factory.broker._subscribe(channel)
 
     def connectionLost(self, why):
         self.factory.broker._source = None
@@ -185,13 +185,12 @@ class AmqpBroadcastProtocol(AmqpSubscriberProtocol):
         # broadcast this message to all HTTP clients
         self.factory.broker.broadcast(pattern, channel, message)
 
-    def connectionMade(self):
-        AmqpSubscriberProtocol.connectionMade(self)
+    def channelEstablished(self):
         self.factory.broker._source = self
         # If we lost connection during operation, we
         # re-subscribe to all channels once the connection is re-established.
         for channel in self.factory.broker._channels:
-            self.factory.broker.consume(channel)
+            self.factory.broker._subscribe(channel)   
 
     def connectionLost(self, why):
         self.factory.broker._source = None
