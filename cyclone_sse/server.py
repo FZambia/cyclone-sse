@@ -98,14 +98,16 @@ class App(cyclone.web.Application):
         handlers = [
             (r"/", BroadcastHandler),
             (r"/stats", StatsHandler),
-            (r"/publish", PublishHandler)
         ]
+
         if settings["broker"] == 'amqp':
             broker = AmqpBroker
         elif settings["broker"] == 'redis':
             broker = RedisBroker
         else:
             broker = HttpBroker
+            handlers.append((r"/publish", PublishHandler))
+
         self.broker = broker(settings)
         cyclone.web.Application.__init__(self, handlers)
 
