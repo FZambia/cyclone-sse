@@ -59,7 +59,7 @@ class AmqpSubscriberProtocol(AMQClient):
         self.factory.delConnection(self)
 
     @defer.inlineCallbacks
-    def consume(self, queue_name):
+    def consume(self, routing_key):
         # declaring exchange
         try:
             yield self.chan.exchange_declare(exchange=self.factory.exchange_name,
@@ -67,10 +67,11 @@ class AmqpSubscriberProtocol(AMQClient):
         except Exception, e:
             log.err(e)
             defer.returnValue(None)    
-        
+
         # declaring queue
         try:
-            yield self.chan.queue_declare(queue=queue_name)
+            result = yield self.chan.queue_declare(exclusive=True)
+            queuename = result.fields[0]
         except Exception, e:
             log.err(e)
             defer.returnValue(None)
@@ -78,25 +79,25 @@ class AmqpSubscriberProtocol(AMQClient):
         # binding queue to exchange with routing_key = queue name
         try:
             yield self.chan.queue_bind(exchange=self.factory.exchange_name,
-                                       queue=queue_name,
-                                       routing_key=queue_name)
+                                       queue=queuename,
+                                       routing_key=routing_key)
         except Exception, e:
             log.err(e)
             defer.returnValue(None)    
 
         # subscribing on queue
         try:
-            yield self.chan.basic_consume(queue=queue_name,
+            yield self.chan.basic_consume(queue=queuename,
                                           no_ack=True,
-                                          consumer_tag=queue_name)
+                                          consumer_tag=routing_key)
         except Exception, e:
             log.err(e)
             defer.returnValue(None)
 
-        queue = yield self.queue(queue_name)
+        queue = yield self.queue(routing_key)
 
         while True:
-            log.msg('consuming %s' % queue_name)
+            log.msg('consuming %s' % routing_key)
             try:
                 msg = yield queue.get()
             except Exception, e:

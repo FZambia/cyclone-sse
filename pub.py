@@ -9,11 +9,11 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(
           host='localhost'))
 channel = connection.channel()
 
-channel.exchange_declare(exchange='test-direct',
+channel.exchange_declare(exchange='sse-cyclone-server',
                          type='direct')
 
 message = json.dumps(['comment', '123'])
-channel.basic_publish(exchange='test-direct',
+channel.basic_publish(exchange='sse-cyclone-server',
                       routing_key=queue_name,
                       body=message)
 print " [x] Sent %r" % (message,)
