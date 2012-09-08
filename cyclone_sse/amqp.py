@@ -2,6 +2,7 @@
 from twisted.internet import reactor
 from twisted.internet import defer
 from twisted.internet import protocol
+from twisted.python import log
 
 from txamqp.protocol import AMQClient
 from txamqp.client import TwistedDelegate
@@ -18,13 +19,14 @@ class AmqpSubscriberProtocol(AMQClient):
 
     def connect_success(self, channel):
         self.connected = 1
-        self.channelEstablished()
+        self.channelReady()
+        self.factory.addConnection(self)
         
-    def channelEstablished(self):
-        print 'channel established'
+    def channelReady(self):
+        pass
 
     def connection_error(self, err):
-        print err
+        log.err(err)
         self.factory.continueTrying = False
         self.transport.loseConnection()
 
@@ -53,43 +55,51 @@ class AmqpSubscriberProtocol(AMQClient):
     def connectionLost(self, reason):
         AMQClient.connectionLost(self, reason)
         self.connected = 0
+        self.factory.delConnection(self)
 
     @defer.inlineCallbacks
     def consume(self, queue_name):
         try:
-            self.chan.exchange_declare(exchange="test-direct", type="direct")
+            yield self.chan.exchange_declare(exchange="test-direct", type="direct")
         except Exception, e:
-            print e
-            print 'error in exchange declare'
+            log.err(e)
             defer.returnValue(None)    
         
         try:
-            self.chan.queue_declare(queue=queue_name)
+            yield self.chan.queue_declare(queue=queue_name)
         except Exception, e:
-            print e
-            print 'error in queue declare'
+            log.err(e)
             defer.returnValue(None)
 
         try:
-            self.chan.queue_bind(exchange="test-direct", queue=queue_name, routing_key=queue_name)
+            yield self.chan.queue_bind(exchange="test-direct", queue=queue_name, routing_key=queue_name)
         except Exception, e:
-            print e
-            print 'error in exchange declare'
+            log.err(e)
             defer.returnValue(None)    
 
         try:
-            self.chan.basic_consume(queue=queue_name, no_ack=True, consumer_tag=queue_name)
+            yield self.chan.basic_consume(queue=queue_name, no_ack=True, consumer_tag=queue_name)
         except Exception, e:
-            print e
-            print 'error consuming queue'
+            log.err(e)
             defer.returnValue(None)
-    
+
         queue = yield self.queue(queue_name)
-      
+
         while True:
-            print 'consuming %s' % queue_name
-            msg = yield queue.get()
+            log.msg('consuming %s' % queue_name)
+            try:
+                msg = yield queue.get()
+            except Exception, e:
+                defer.returnValue(None)
             self.messageReceived(None, msg.routing_key, msg.content.body)
+
+    @defer.inlineCallbacks
+    def cancel(self, queue_name):
+        try:
+            yield self.chan.basic_cancel(consumer_tag=queue_name)
+        except Exception, e:
+            log.err(e)
+            defer.returnValue(None)
 
     def messageReceived(self, pattern, channel, message):
         pass

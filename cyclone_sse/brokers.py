@@ -36,8 +36,18 @@ class Broker(object):
         raise NotImplementedError('please, provide implementation for connect method')
 
     def _subscribe(self, channel):
-        log.msg("Subscribing entire server to %s" % channel)
-        return self.subscribe(channel)
+        if channel not in self._channels:
+            self._channels[channel] = []
+            log.msg("Subscribing entire server to %s" % channel)
+            if self._source:
+                self.subscribe(channel)
+
+    def _unsubscribe(self, channel):
+        log.msg('Unsubscribing entire server from channel %s' % channel)
+        try:
+            del self._channels[channel]
+        except KeyError:
+            pass
 
     def add_client(self, client):
         self._clients.append(client)
@@ -46,21 +56,18 @@ class Broker(object):
         if not channels:
             raise cyclone.web.HTTPError(400)
         for channel in channels:
-            if channel not in self._channels:
-                self._channels[channel] = []
-                self._subscribe(channel)
+            self._subscribe(channel)
 
             if client not in self._channels[channel]:
                 self._channels[channel].append(client)
 
-        log.msg("Client %s subscribed to %s" % \
-                (client.request.remote_ip, channel))
+            log.msg("Client %s subscribed to %s" % (client.request.remote_ip, channel))
 
         self.send_cache(client)
 
     def remove_client(self, client):
         self._clients.remove(client)
-   
+
         empty = []
         for channel, clients in self._channels.iteritems():
             if client in clients:
@@ -70,9 +77,7 @@ class Broker(object):
                 empty.append(channel)
 
         for channel in empty:
-            log.msg('Unsubscribing entire server from channel %s' % channel)
-            self.unsubscribe(channel)
-            del self._channels[channel]
+            self._unsubscribe(channel)
 
     def subscribe(self, channel):
         raise NotImplementedError('please, provide implementation for subscribe method')
@@ -185,7 +190,7 @@ class AmqpBroadcastProtocol(AmqpSubscriberProtocol):
         # broadcast this message to all HTTP clients
         self.factory.broker.broadcast(pattern, channel, message)
 
-    def channelEstablished(self):
+    def channelReady(self):
         self.factory.broker._source = self
         # If we lost connection during operation, we
         # re-subscribe to all channels once the connection is re-established.
@@ -207,3 +212,6 @@ class AmqpBroker(Broker):
 
     def subscribe(self, channel):
         self._source.consume(channel)
+
+    def unsubscribe(self, channel):
+        self._source.cancel(channel)
