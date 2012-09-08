@@ -21,7 +21,8 @@ from twisted.application import service
 from twisted.plugin import IPlugin
 from twisted.python import usage
 from zope.interface import implements
-from cyclone_sse import server
+
+from cyclone_sse.server import App
 
 try:
     from twisted.internet import ssl
@@ -35,8 +36,7 @@ class Options(usage.Options):
     optParameters = [
         ["port", "p", 8888, "tcp port to listen on", int],
         ["listen", "l", "127.0.0.1", "interface to listen on"],
-        ["redis-host", None, "127.0.0.1", "redis host"],
-        ["redis-port", None, 6379, "redis port", int],
+
         ["use-ssl", None, 0, "use ssl", int],
         ["ssl-port", None, 8443, "port to listen on for ssl", int],
         ["ssl-listen", None, "127.0.0.1", "interface to listen on for ssl"],
@@ -44,6 +44,21 @@ class Options(usage.Options):
         ["ssl-key", None, "server.key", "ssl server key"],
         ["ssl-app", None, None, "ssl application (same as --app)"],
         ["ssl-appopts", None, None, "arguments to the ssl application"],
+
+        ["use-amqp", None, 0, "use AMQP broker as publish provider"],
+
+        ["redis-host", None, "127.0.0.1", "redis host"],
+        ["redis-port", None, 6379, "redis port", int],
+        
+        ["amqp-host", None, "127.0.0.1", "amqp broker's host"],
+        ["amqp-port", None, 5672, "amqp broker's port", int],
+        ["amqp-vhost", None, "/", "amqp broker's virtual host"],
+        ["amqp-spec", None, "rabbit.xml", "path to AMQP specification XML file"],
+        ["amqp-username", None, "guest", "username"],
+        ["amqp-password", None, "guest", "password"],
+        ["amqp-exchange-name", None, "sse-cyclone-server", "amqp exchange name"],
+        ["amqp-exchange-type", None, "direct", "amqp exchange type"],
+        ["amqp-channel", None, 1, "amqp channel number", int],
     ]
 
 
@@ -58,14 +73,14 @@ class ServiceMaker(object):
         s = None
 
         # http
-        s = internet.TCPServer(options["port"], server.App(server.RedisBroker, options),
+        s = internet.TCPServer(options["port"], App(options),
                                interface=options["listen"])
         s.setServiceParent(srv)
 
         # https
         if options["use-ssl"]:
             if ssl_support:
-                s = internet.SSLServer(options["ssl-port"], server.App(options),
+                s = internet.SSLServer(options["ssl-port"], App(options),
                                        ssl.DefaultOpenSSLContextFactory(
                                        options["ssl-key"],
                                        options["ssl-cert"]),
