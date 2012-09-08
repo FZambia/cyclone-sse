@@ -216,7 +216,7 @@ class BroadcastHandler(ExtendedSSEHandler):
             self.set_header(name, value)
 
     def get_channels(self):
-        channels = self.get_arguments('channels[]')
+        channels = self.get_arguments('channels')
         return channels
 
     def bind(self):
