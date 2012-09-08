@@ -17,7 +17,8 @@ class Broker(object):
     base class, which goal is to keep state of connections and to
     broadcast new messages to all clients of certain channel.
     """
-    def __init__(self, settings):
+    def __init__(self, settings, name='unknown'):
+        self._name = name
         self._source = None
         self._channels = {}
         self._cache = []
@@ -48,6 +49,8 @@ class Broker(object):
             del self._channels[channel]
         except KeyError:
             pass
+        if self._source:
+            self.unsubscribe(channel)
 
     def add_client(self, client):
         self._clients.append(client)

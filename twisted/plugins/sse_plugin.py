@@ -21,8 +21,8 @@ from twisted.application import service
 from twisted.plugin import IPlugin
 from twisted.python import usage
 from zope.interface import implements
-from cyclone_sse import server
 
+from cyclone_sse.server import App
 
 try:
     from twisted.internet import ssl
@@ -73,14 +73,14 @@ class ServiceMaker(object):
         s = None
 
         # http
-        s = internet.TCPServer(options["port"], server.App(server.RedisBroker, options),
+        s = internet.TCPServer(options["port"], App(options),
                                interface=options["listen"])
         s.setServiceParent(srv)
 
         # https
         if options["use-ssl"]:
             if ssl_support:
-                s = internet.SSLServer(options["ssl-port"], server.App(options),
+                s = internet.SSLServer(options["ssl-port"], App(options),
                                        ssl.DefaultOpenSSLContextFactory(
                                        options["ssl-key"],
                                        options["ssl-cert"]),

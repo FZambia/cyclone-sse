@@ -72,11 +72,14 @@ class BroadcastHandler(ExtendedSSEHandler):
 
 
 class App(cyclone.web.Application):
-    def __init__(self, broker, settings):
+    def __init__(self, settings):
         handlers = [
             (r"/", BroadcastHandler)
         ]
-        self.broker = AmqpBroker(settings)
-        #self.broker._channels['base'] = []
+        if settings["use-amqp"]:
+            broker = AmqpBroker
+        else:
+            broker = RedisBroker
+        self.broker = broker(settings)
         cyclone.web.Application.__init__(self, handlers)
 

@@ -108,6 +108,7 @@ class AmqpSubscriberProtocol(AMQClient):
     def cancel(self, queue_name):
         try:
             yield self.chan.basic_cancel(consumer_tag=queue_name)
+            print '%s stopped' % queue_name
         except Exception, e:
             log.err(e)
             defer.returnValue(None)
