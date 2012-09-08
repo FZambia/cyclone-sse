@@ -205,10 +205,16 @@ class AmqpBroadcastProtocol(AmqpSubscriberProtocol):
 class AmqpBroker(Broker):
     def connect(self, settings):
         # PubSub client connection
-        qf = AmqpSubscriberFactory()
+        qf = AmqpSubscriberFactory(spec_file=settings["amqp-spec"],
+                                   vhost=settings["amqp-vhost"],
+                                   username=settings["amqp-username"],
+                                   password=settings["amqp-password"],
+                                   exchange_name=settings["amqp-exchange-name"],
+                                   exchange_type=settings["amqp-exchange-type"],
+                                   channel=settings["amqp-channel"])
         qf.broker = self
         qf.protocol = AmqpBroadcastProtocol
-        reactor.connectTCP("127.0.0.1", 5672, qf)
+        reactor.connectTCP(settings["amqp-host"], settings["amqp-port"], qf)
 
     def subscribe(self, channel):
         self._source.consume(channel)

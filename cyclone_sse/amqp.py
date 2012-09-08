@@ -33,7 +33,8 @@ class AmqpSubscriberProtocol(AMQClient):
     @defer.inlineCallbacks
     def connect(self):
         try:
-            yield self.start({'LOGIN': self.factory.username, 'PASSWORD': self.factory.password})
+            yield self.start({'LOGIN': self.factory.username,
+                              'PASSWORD': self.factory.password})
         except Exception, e:
             self.connection_error(e)
             defer.returnValue(None)
@@ -59,26 +60,35 @@ class AmqpSubscriberProtocol(AMQClient):
 
     @defer.inlineCallbacks
     def consume(self, queue_name):
+        # declaring exchange
         try:
-            yield self.chan.exchange_declare(exchange="test-direct", type="direct")
+            yield self.chan.exchange_declare(exchange=self.factory.exchange_name,
+                                             type=self.factory.exchange_type)
         except Exception, e:
             log.err(e)
             defer.returnValue(None)    
         
+        # declaring queue
         try:
             yield self.chan.queue_declare(queue=queue_name)
         except Exception, e:
             log.err(e)
             defer.returnValue(None)
 
+        # binding queue to exchange with routing_key = queue name
         try:
-            yield self.chan.queue_bind(exchange="test-direct", queue=queue_name, routing_key=queue_name)
+            yield self.chan.queue_bind(exchange=self.factory.exchange_name,
+                                       queue=queue_name,
+                                       routing_key=queue_name)
         except Exception, e:
             log.err(e)
             defer.returnValue(None)    
 
+        # subscribing on queue
         try:
-            yield self.chan.basic_consume(queue=queue_name, no_ack=True, consumer_tag=queue_name)
+            yield self.chan.basic_consume(queue=queue_name,
+                                          no_ack=True,
+                                          consumer_tag=queue_name)
         except Exception, e:
             log.err(e)
             defer.returnValue(None)
@@ -110,16 +120,19 @@ class AmqpSubscriberFactory(protocol.ReconnectingClientFactory):
     continueTrying = True
     protocol = AmqpSubscriberProtocol
 
-    def __init__(self, spec_file=None, vhost=None, host=None, port=None, username=None, password=None, channel=None):
+    def __init__(self, spec_file=None, vhost=None,
+                 host=None, port=None, username=None,
+                 password=None, exchange_name="",
+                 exchange_type="fanout", channel=None):
         spec_file = spec_file or 'rabbit.xml'
         self.spec = txamqp.spec.load(spec_file)
         self.username = username or 'guest'
         self.password = password or 'guest'
         self.vhost = vhost or '/'
-        self.host = host or 'localhost'
-        self.port = port or 5672
         self.chan = channel or 1
         self.delegate = TwistedDelegate()
+        self.exchange_name = exchange_name
+        self.exchange_type = exchange_type
 
     def buildProtocol(self, addr):
         p = self.protocol(self.delegate, self.vhost, self.spec)
