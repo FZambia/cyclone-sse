@@ -45,7 +45,9 @@ class Options(usage.Options):
         ["ssl-app", None, None, "ssl application (same as --app)"],
         ["ssl-appopts", None, None, "arguments to the ssl application"],
 
-        ["broker", None, "redis", "publish provider"],
+        ["broker", None, "http", "publish provider"],
+
+        ["http-secret", None, "", "secret key to publish via HTTP"],
 
         ["redis-host", None, "127.0.0.1", "redis host"],
         ["redis-port", None, 6379, "redis port", int],

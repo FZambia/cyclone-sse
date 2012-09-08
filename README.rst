@@ -80,7 +80,7 @@ As you can see we use `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyf
 And it seems to work nice even with Internet Explorer using long polling.
 
 
-To check that everything work fine open your web browser console, then go to redis console (``redis-cli``) and type::
+To check that everything work fine with redis - open your web browser console, then go to redis console (``redis-cli``) and type::
 
 	publish base '[1, 2, 3]'
 	
@@ -90,6 +90,11 @@ There is a moment to keep attention at: your message must be json encoded data -
 add ``'type': 'text'`` in jquery sse plugin initialization options.
 
 
+Or if you are using default HTTP broker::
+
+	curl --dump-header - -X POST -d "message=%5B123%2C+124%5D&channel=base" http://localhost:8888/publish
+
+You published message ``[123, 124]`` into channel ``base``. Do not forget to encode your message as json!!
 
 
 

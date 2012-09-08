@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import sys
-import uuid
-
 import cyclone.web
 from cyclone.sse import SSEHandler
 
@@ -24,6 +21,7 @@ from twisted.internet import reactor
 from twisted.internet import task
 from twisted.python import log
 
+from cyclone_sse.brokers import HttpBroker
 from cyclone_sse.brokers import RedisBroker
 from cyclone_sse.brokers import AmqpBroker
 
@@ -78,16 +76,36 @@ class StatsHandler(cyclone.web.RequestHandler):
         self.finish()
 
 
+class PublishHandler(cyclone.web.RequestHandler):
+
+    def post(self):
+        key = self.get_argument("key", None)
+        secret_key = self.application.broker.secret_key
+        if secret_key and key != secret_key:
+            raise cyclone.web.HTTPError(401)
+        message = self.get_argument('message', None)
+        channel = self.get_argument("channel", None)
+        if channel and message:
+            self.application.broker.publish(channel, message)
+            self.set_header("Content-Type", "application/json")
+            self.write({'status':'ok'})
+        else:
+            return cyclone.web.HTTPError(400)
+
+
 class App(cyclone.web.Application):
     def __init__(self, settings):
         handlers = [
             (r"/", BroadcastHandler),
             (r"/stats", StatsHandler),
+            (r"/publish", PublishHandler)
         ]
         if settings["broker"] == 'amqp':
             broker = AmqpBroker
-        else:
+        elif settings["broker"] == 'redis':
             broker = RedisBroker
+        else:
+            broker = HttpBroker
         self.broker = broker(settings)
         cyclone.web.Application.__init__(self, handlers)
 

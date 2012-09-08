@@ -1,5 +1,4 @@
 # coding:utf-8
-import sys
 import uuid
 
 from twisted.internet import defer
@@ -140,6 +139,35 @@ class Broker(object):
         })
         if len(self._cache) > self._cache_size:
             self._cache = self._cache[-self._cache_size:]
+
+
+class HttpBroker(Broker):
+
+    def __init__(self, *args, **kwargs):
+        super(HttpBroker, self).__init__(*args, **kwargs)
+
+    def connect(self, settings):
+        self.secret_key = settings["http-secret"]
+        self.queue = defer.DeferredQueue()
+        self._source = True
+        self.start_consuming()
+
+    @defer.inlineCallbacks
+    def start_consuming(self):
+        print 'start consuming'
+        while True:
+            msg = yield self.queue.get()
+            self.broadcast(None, msg['channel'], msg['message'])
+
+    def subscribe(self, channel):
+        pass
+
+    def unsubscribe(self, channel):
+        pass
+
+    def publish(self, channel, message):
+        if channel in self._channels:
+            self.queue.put({'channel': channel, 'message': message})
 
 
 class RedisBroadcastProtocol(cyclone.redis.SubscriberProtocol):
