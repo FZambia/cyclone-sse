@@ -24,44 +24,9 @@ from twisted.internet import reactor
 from twisted.internet import task
 from twisted.python import log
 
-from cyclone_sse.brokers import RedisBroker, Broker
+from cyclone_sse.brokers import RedisBroker
+from cyclone_sse.brokers import AmqpBroker
 
-
-from cyclone_sse.amqp import AmqpSubscriberFactory, AmqpConsumerProtocol
-
-
-class AmqpBroker(Broker):
-    def connect(self, settings):
-        # PubSub client connection
-        qf = AmqpSubscriberFactory()
-        qf.broker = self
-        qf.protocol = QueueProtocol
-        reactor.connectTCP("127.0.0.1", 5672, qf)
-
-    def subscribe(self, channel):
-        self._source.consume(channel)
-
-class QueueProtocol(AmqpConsumerProtocol):
-    def messageReceived(self, pattern, channel, message):
-        # When new messages are published to Redis channels or patterns,
-        # they are broadcasted to all HTTP clients subscribed to those
-        # channels.
-        self.factory.broker.broadcast(pattern, channel, message)
-
-    def connectionMade(self):
-        AmqpConsumerProtocol.connectionMade(self)
-        self.factory.broker._source = self
-        # If we lost connection with Redis during operation, we
-        # re-subscribe to all channels once the connection is re-established.
-        for channel in self.factory.broker._channels:
-            if "*" in channel:
-                self.factory.broker.consume(channel)
-            else:
-                self.factory.broker.subscribe(channel)
-
-    def connectionLost(self, why):
-        self.factory.broker._source = None
-        AmqpConsumerProtocol.connectionLost(self, why)
 
 class ExtendedSSEHandler(SSEHandler):
     def sendPing(self):

@@ -2,12 +2,14 @@
 import sys
 import uuid
 
-import cyclone.redis
-
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet import task
 from twisted.python import log
+
+import cyclone.redis
+from cyclone_sse.amqp import AmqpSubscriberFactory
+from cyclone_sse.amqp import AmqpSubscriberProtocol
 
 
 class Broker(object):
@@ -129,35 +131,7 @@ class Broker(object):
             self._cache = self._cache[-self._cache_size:]
 
 
-class RedisBroker(Broker):
-    """
-    listens Redis channels and broadcasts to clients
-    """
-    def connect(self, settings):
-        # PubSub client connection
-        qf = cyclone.redis.SubscriberFactory()
-        qf.broker = self
-        qf.maxDelay = 20
-        qf.protocol = QueueProtocol
-        reactor.connectTCP(settings["redis-host"], settings["redis-port"], qf) 
-
-    def is_pattern_blocked(self, pattern):
-        return pattern in ['unsubscribe', 'subscribe']
-
-    def subscribe(self, channel):
-        if "*" in channel:
-            self._source.psubscribe(channel)
-        else:
-            self._source.subscribe(channel)
-
-    def unsubscribe(self, channel):
-        if "*" in channel:
-            self._source.punsubscribe(channel)
-        else:
-            self._source.unsubscribe(channel)
-
-
-class QueueProtocol(cyclone.redis.SubscriberProtocol):
+class RedisBroadcastProtocol(cyclone.redis.SubscriberProtocol):
     def messageReceived(self, pattern, channel, message):
         # When new messages are published to Redis channels or patterns,
         # they are broadcasted to all HTTP clients subscribed to those
@@ -176,3 +150,61 @@ class QueueProtocol(cyclone.redis.SubscriberProtocol):
 
     def connectionLost(self, why):
         self.factory.broker._source = None
+
+
+class RedisBroker(Broker):
+    """
+    listens Redis channels and broadcasts to clients
+    """
+    def connect(self, settings):
+        # PubSub client connection
+        qf = cyclone.redis.SubscriberFactory()
+        qf.broker = self
+        qf.maxDelay = 20
+        qf.protocol = RedisBroadcastProtocol
+        reactor.connectTCP(settings["redis-host"], settings["redis-port"], qf) 
+
+    def is_pattern_blocked(self, pattern):
+        return pattern in ['unsubscribe', 'subscribe']
+
+    def subscribe(self, channel):
+        if "*" in channel:
+            self._source.psubscribe(channel)
+        else:
+            self._source.subscribe(channel)
+
+    def unsubscribe(self, channel):
+        if "*" in channel:
+            self._source.punsubscribe(channel)
+        else:
+            self._source.unsubscribe(channel)
+
+
+class AmqpBroadcastProtocol(AmqpSubscriberProtocol):
+    def messageReceived(self, pattern, channel, message):
+        # broadcast this message to all HTTP clients
+        self.factory.broker.broadcast(pattern, channel, message)
+
+    def connectionMade(self):
+        AmqpSubscriberProtocol.connectionMade(self)
+        self.factory.broker._source = self
+        # If we lost connection during operation, we
+        # re-subscribe to all channels once the connection is re-established.
+        for channel in self.factory.broker._channels:
+            self.factory.broker.consume(channel)
+
+    def connectionLost(self, why):
+        self.factory.broker._source = None
+        AmqpSubscriberProtocol.connectionLost(self, why)
+
+
+class AmqpBroker(Broker):
+    def connect(self, settings):
+        # PubSub client connection
+        qf = AmqpSubscriberFactory()
+        qf.broker = self
+        qf.protocol = AmqpBroadcastProtocol
+        reactor.connectTCP("127.0.0.1", 5672, qf)
+
+    def subscribe(self, channel):
+        self._source.consume(channel)

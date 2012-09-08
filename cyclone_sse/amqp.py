@@ -9,7 +9,7 @@ from txamqp.content import Content
 import txamqp
 
 
-class AmqpConsumerProtocol(AMQClient):
+class AmqpSubscriberProtocol(AMQClient):
 
     def connectionMade(self):
         AMQClient.connectionMade(self)
@@ -18,7 +18,6 @@ class AmqpConsumerProtocol(AMQClient):
 
     def connect_success(self, channel):
         self.connected = 1
-        self.factory.addConnection(self)
 
     def connection_error(self, err):
         print err
@@ -50,7 +49,6 @@ class AmqpConsumerProtocol(AMQClient):
     def connectionLost(self, reason):
         AMQClient.connectionLost(self, reason)
         self.connected = 0
-        self.factory.delConnection(self)
 
     @defer.inlineCallbacks
     def consume(self, queue_name):
@@ -88,7 +86,7 @@ class AmqpConsumerProtocol(AMQClient):
             print 'consuming'
             msg = yield queue.get()
             self.messageReceived(None, msg.routing_key, msg.content.body)
-    
+
     def messageReceived(self, pattern, channel, message):
         pass
 
@@ -96,7 +94,7 @@ class AmqpConsumerProtocol(AMQClient):
 class AmqpSubscriberFactory(protocol.ReconnectingClientFactory):
     maxDelay = 120
     continueTrying = True
-    protocol = AmqpConsumerProtocol
+    protocol = AmqpSubscriberProtocol
 
     def __init__(self, spec_file=None, vhost=None, host=None, port=None, username=None, password=None, channel=None):
         spec_file = spec_file or 'rabbit.xml'
