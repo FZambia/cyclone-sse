@@ -22,7 +22,7 @@ setup(
     url=None,
     license="http://www.apache.org/licenses/LICENSE-2.0",
     description="EventSource (SSE, Server-Sent-Events) broadcasting server with channel support, last-event-id etc, based on top of cyclone web server",
-    keywords="python non-blocking twisted cyclone sse eventsource broadcast",
+    keywords="python non-blocking twisted cyclone sse eventsource broadcast http redis amqp rabbitmq",
     packages=["cyclone_sse", "twisted.plugins"],
     package_data={"twisted": ["plugins/sse_plugin.py"]},
     **extra
