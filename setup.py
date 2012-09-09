@@ -16,7 +16,7 @@ else:
 
 setup(
     name="cyclone_sse",
-    version="0.1",
+    version="0.3",
     author="Alexandr Emelin",
     author_email="frvzmb@gmail.com",
     url=None,
