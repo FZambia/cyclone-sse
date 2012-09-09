@@ -21,7 +21,7 @@ setup(
     author_email="frvzmb@gmail.com",
     url=None,
     license="http://www.apache.org/licenses/LICENSE-2.0",
-    description="EventSource (SSE, Server-Sent-Events) broadcasting server on top of Cyclone and Redis with channel support, last-event-id etc",
+    description="EventSource (SSE, Server-Sent-Events) broadcasting server with channel support, last-event-id etc, based on top of cyclone web server",
     keywords="python non-blocking twisted cyclone sse eventsource broadcast",
     packages=["cyclone_sse", "twisted.plugins"],
     package_data={"twisted": ["plugins/sse_plugin.py"]},
