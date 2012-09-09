@@ -1,4 +1,4 @@
-# coding:utf-8
+# coding: utf-8
 #
 # Copyright 2012 Alexandr Emelin
 #
@@ -168,7 +168,6 @@ class HttpBroker(Broker):
 
     @defer.inlineCallbacks
     def start_consuming(self):
-        print 'start consuming'
         while True:
             msg = yield self.queue.get()
             self.broadcast(None, msg['channel'], msg['message'])
