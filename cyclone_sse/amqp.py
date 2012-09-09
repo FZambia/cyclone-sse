@@ -126,7 +126,7 @@ class AmqpSubscriberFactory(protocol.ReconnectingClientFactory):
                  host=None, port=None, username=None,
                  password=None, exchange_name="",
                  exchange_type="fanout", channel=None):
-        spec_file = spec_file or 'rabbit.xml'
+        spec_file = spec_file or 'extras/rabbitmq-specification.xml'
         self.spec = txamqp.spec.load(spec_file)
         self.username = username or 'guest'
         self.password = password or 'guest'
