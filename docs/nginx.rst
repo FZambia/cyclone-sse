@@ -1,6 +1,6 @@
 Nginx configuration
 ===================
-In Chrome or Safari you can across with::
+In Chrome or Safari you can come across with::
 	
 	Uncaught Error: SECURITY_ERR: DOM Exception 18 
 
