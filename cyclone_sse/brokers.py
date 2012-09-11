@@ -102,6 +102,8 @@ class Broker(object):
         raise NotImplementedError('please, provide implementation for unsubscribe method')
 
     def ping(self):
+        if self._clients:
+            log.msg('ping %s clients' % str(len(self._clients)))
         for client in self._clients:
             client.sendPing()
             if 'X-Requested-With' in client.request.headers:

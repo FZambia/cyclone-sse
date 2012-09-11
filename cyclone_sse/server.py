@@ -30,7 +30,6 @@ class ExtendedSSEHandler(SSEHandler):
     def sendPing(self):
         # send comment line to keep connection with client opened as mentioned here:
         # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
-        log.msg('ping client %s' % self.request.remote_ip)
         self.transport.write(": %s\n\n" % 'sse ping')
 
 

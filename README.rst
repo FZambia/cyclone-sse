@@ -3,7 +3,7 @@ inspired by `tornado_sse <https://github.com/truetug/tornado-sse>`_ by `Sergey T
 Overview
 ===========
 
-EventSource (or Server-Sent-Events) is a technology that allows your server to push data into client browser.
+EventSource (or Server-Sent-Events) is a technology for providing push data (notifications, content updates) from a server to a browser client in the form of DOM events.
 Read these excellent articles for more information:
 
 `html5rocks.com <http://www.html5rocks.com/en/tutorials/eventsource/basics/>`_
