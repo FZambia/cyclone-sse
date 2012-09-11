@@ -20,7 +20,7 @@
 			        	console.log('no sse server address specified')
 			        	return false;
 			        }
-			        
+
 			        // detect sse channels to bind
 			        var channel_raw = self.attr('data-sse-channels');
 			        if (channel_raw.length) {
@@ -28,7 +28,7 @@
 			        } else {
 			        	var channel_list = options.channels;
 			        }
-			        
+
 			        // make appropriate url
 			        var url = sse_server;
 			        if (channel_list.length) {
