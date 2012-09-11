@@ -52,6 +52,9 @@ If your main server in behind Nginx you should proxy SSE like this::
     }
 
 
+Also read `this <https://github.com/FZambia/cyclone_sse/blob/master/docs/nginx.rst>`_ to avoid some possible problems
+
+
 Client side
 ===========
 
