@@ -97,5 +97,12 @@ Or if you are using default HTTP broker::
 You published message ``[123, 124]`` into channel ``base``. Do not forget to encode your message as json!!
 
 
+SSE provides a possibility to use custom Event type. This app does not use it, because some web browsers recognize only
+standard event type - ``message``. But it does not mean you can not use custom event types. All you need to do is, for example, to put your
+custom event type in the first place of message array. (``["your_event_type", "data"]``). In this way you can detect event type on
+client side and decide what to do with incoming message.
+
+
+
 
 
