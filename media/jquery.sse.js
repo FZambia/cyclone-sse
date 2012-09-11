@@ -32,7 +32,7 @@
 			        // make appropriate url
 			        var url = sse_server;
 			        if (channel_list.length) {
-			        	var channels =  $.param({'channels': channel_list, true});
+			        	var channels =  $.param({'channels': channel_list}, true);
 			        	url = url + '?' + channels;
 			        }
 
