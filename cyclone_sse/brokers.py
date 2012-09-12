@@ -130,8 +130,6 @@ class Broker(object):
             # put this message into cache
             eid = str(uuid.uuid4())
             self.update_cache(eid, channel, message)
-            log.msg('updating cache')
-            log.msg(self._cache)
 
             # sent message to all clients
             for client in clients:

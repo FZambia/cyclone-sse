@@ -79,8 +79,8 @@ in browser::
 	</html>
 
 	
-As you can see we use `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_
-And it seems to work nice even with Internet Explorer using long polling.
+We use a extremely modified `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_
+If browser does not natively supports EventSource, then we use ``long-polling`` , so it works nice even in Internet Explorer.
 
 
 To check that everything work fine with redis - open your web browser console, then go to redis console (``redis-cli``) and type::
