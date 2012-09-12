@@ -15,8 +15,8 @@
                 var self = $(this);
 			    if($.eventsource) {
 			    	// detect sse server address part
-			        var sse_server = self.attr('data-sse-address') || options.address;
-			        if (!sse_server) {
+			        var url = self.attr('data-sse-address') || options.address;
+			        if (!url) {
 			        	console.log('no sse server address specified')
 			        	return false;
 			        }
@@ -29,11 +29,10 @@
 			        	var channel_list = options.channels;
 			        }
 
-			        // make appropriate url
-			        var url = sse_server;
 			        if (channel_list.length) {
 			        	var channels =  $.param({'channels': channel_list}, true);
-			        	url = url + '?' + channels;
+			        } else {
+			        	var channels = null;
 			        }
 
 			        if (channel_list.length === 0 && options.debug === true) {
@@ -48,6 +47,7 @@
 			        $.eventsource({
 			            label: options.label,
 			            url: url,
+			            data: channels,
 			            dataType: options.type,
 						open: function() {
 							if (options.debug === true) {
