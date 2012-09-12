@@ -32,6 +32,9 @@ class ExtendedSSEHandler(SSEHandler):
         # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
         self.transport.write(": %s\n\n" % 'sse ping')
 
+    def is_xhr(self):
+        return self.request.headers.get('X-Requested-With', None) == 'XMLHttpRequest'
+
 
 class BroadcastHandler(ExtendedSSEHandler):
 
@@ -54,10 +57,8 @@ class BroadcastHandler(ExtendedSSEHandler):
         """
         called when new connection established 
         """
-        #headers = self._generate_headers()
-        #self.write(headers)
         log.msg(self.request.headers)
-        self.write(':\n')
+        self.write('\n\n')
         self.flush()
         self.application.broker.add_client(self)
 

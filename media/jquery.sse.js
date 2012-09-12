@@ -57,17 +57,17 @@
 						},
 						message: function(msg) {
 							if (options.debug === true) {
-								console.log(msg);	
+								console.log(msg);
 							}
 							// msg can be null in case of ping sse messages
 							if (msg) {
 						    	self.trigger('sse.message', msg);
 						    }
 						},
-						error: function(msg) {
+						error: function(err) {
 							if (options.debug === true) {
 								console.log('sse connection error:');
-								console.log(msg);
+								console.log(err);
 							}
 						    self.trigger('sse.error', msg);
 			            }

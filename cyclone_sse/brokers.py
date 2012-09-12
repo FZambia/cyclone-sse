@@ -35,7 +35,7 @@ class Broker(object):
         self._source = None
         self._channels = {}
         self._cache = []
-        self._cache_size = 200
+        self._cache_size = 50
         self._clients = []
         self._settings = settings
         self.setup(self._settings)
@@ -82,7 +82,13 @@ class Broker(object):
         self.send_cache(client)
 
     def remove_client(self, client):
-        self._clients.remove(client)
+        if client in self._clients:
+            self._clients.remove(client)
+            try:
+                client.flush()
+                client.finish()
+            except:
+                pass
 
         empty = []
         for channel, clients in self._channels.iteritems():
@@ -106,9 +112,8 @@ class Broker(object):
             log.msg('ping %s clients' % str(len(self._clients)))
         for client in self._clients:
             client.sendPing()
-            if 'X-Requested-With' in client.request.headers:
-                client.flush()
-                client.finish()
+            if client.is_xhr():
+                client.unbind()
 
     def broadcast(self, pattern, channel, message):
         """
@@ -119,21 +124,26 @@ class Broker(object):
         clients = self._channels[channel]
         args = (str(len(clients)), pattern, channel, message)
         log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
+
         if clients:
+
+            # put this message into cache
+            eid = str(uuid.uuid4())
+            self.update_cache(eid, channel, message)
+            log.msg('updating cache')
+            log.msg(self._cache)
+
+            # sent message to all clients
             for client in clients:
-                self.send_event(client, channel, message)
+                self.send_event(client, message, eid=eid)
 
     def is_pattern_blocked(self, pattern):
         return False
 
-    def send_event(self, client, channel, message, eid=None):
-        if eid is None:
-            eid = str(uuid.uuid4())
-            self.update_cache(eid, channel, message)
+    def send_event(self, client, message, eid):
         client.sendEvent(message, eid=eid)
-        if 'X-Requested-With' in client.request.headers:
-            client.flush()
-            client.finish()
+        if client.is_xhr():
+            client.unbind()
 
     def send_cache(self, client):
         last_event_id = client.request.headers.get('Last-Event-Id', None)
@@ -145,7 +155,9 @@ class Broker(object):
 
             for item in self._cache[i:]:
                 if item['channel'] in client.get_channels():
-                    self.send_event(client, item['channel'], item['message'], eid=item['eid'])
+                    self.send_event(client, item['message'], item['eid'])
+                    if client.is_xhr():
+                        break
 
     def update_cache(self, eid, channel, message):
         self._cache.append({

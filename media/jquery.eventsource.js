@@ -103,6 +103,7 @@
 						this.label = label;
 
 						stream.cache[label].options.error.call(this, err);
+
 					}
 				}, false);
 
@@ -126,7 +127,7 @@
 						stream.cache[label].lastEventId = event.lastEventId;
 						stream.cache[label].history.push([event, streamData]); //[stream.cache[label].lastEventId] = streamData;
 						stream.cache[label].options.message.call(this, streamData ? streamData : null, event);
-
+						
 						// TODO: Add custom event triggering
 					}
 				}, false);
@@ -159,6 +160,7 @@
 								this.label = label;
 								stream.cache[label].options.error.call(this, err);
 							}
+							
 						},
 						success: function(data) {
 
