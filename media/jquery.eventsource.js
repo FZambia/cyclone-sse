@@ -254,7 +254,7 @@
 		}
 	},
 
-	hasNativeSupport = global.EventSource ? false : false;
+	hasNativeSupport = global.EventSource ? true : false;
 
 	jQuery.eventsource = function(options) {
 
