@@ -17,6 +17,7 @@ import cyclone.web
 from cyclone.sse import SSEHandler
 
 from twisted.internet import defer
+from twisted.internet import base
 from twisted.internet import reactor
 from twisted.internet import task
 from twisted.python import log
@@ -27,10 +28,30 @@ from cyclone_sse.brokers import AmqpBroker
 
 
 class ExtendedSSEHandler(SSEHandler):
-    def sendPing(self):
+
+    def reset_ping(self):
+        self.del_ping()
+        self.set_ping()
+
+    def set_ping(self):
+        ping = defer.Deferred()
+        ping.addCallback(self.send_ping)
+        ping.addErrback(lambda err: log.err(err))
+        self.ping = reactor.callLater(5, ping.callback, True)
+
+    def del_ping(self):
+        if hasattr(self, 'ping') and isinstance(self.ping, base.DelayedCall):
+            if not self.ping.called and not self.ping.cancelled:
+                self.ping.cancel()
+
+    def send_ping(self, _ignored):
         # send comment line to keep connection with client opened as mentioned here:
         # https://developer.mozilla.org/en-US/docs/Server-sent_events/Using_server-sent_events
         self.transport.write(": %s\n\n" % 'sse ping')
+        if self.is_xhr():
+            self.unbind()
+        else:
+            self.set_ping()
 
     def is_xhr(self):
         return self.request.headers.get('X-Requested-With', None) == 'XMLHttpRequest'

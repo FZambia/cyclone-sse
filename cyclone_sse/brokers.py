@@ -42,9 +42,6 @@ class Broker(object):
 
     def setup(self, settings):
         self.connect(settings)
-        # ping clients periodically to keep their connections alive
-        self.lc = task.LoopingCall(self.ping)
-        self.lc.start(15)
 
     def connect(self, settings):
         raise NotImplementedError('please, provide implementation for connect method')
@@ -66,7 +63,10 @@ class Broker(object):
             self.unsubscribe(channel)
 
     def add_client(self, client):
+
         self._clients.append(client)
+
+        client.set_ping()
 
         channels = client.get_channels()
         if not channels:
@@ -84,13 +84,17 @@ class Broker(object):
     def remove_client(self, client):
         if client in self._clients:
             self._clients.remove(client)
+            client.del_ping()
             try:
                 client.flush()
                 client.finish()
-            except:
+            except defer.AlreadyCalledError:
+                # client connection has already been finished
                 pass
 
+        # channels that have no clients
         empty = []
+
         for channel, clients in self._channels.iteritems():
             if client in clients:
                 log.msg('Unsubscribing client from channel %s' % channel)
@@ -106,14 +110,6 @@ class Broker(object):
 
     def unsubscribe(self, channel):
         raise NotImplementedError('please, provide implementation for unsubscribe method')
-
-    def ping(self):
-        if self._clients:
-            log.msg('ping %s clients' % str(len(self._clients)))
-        for client in self._clients:
-            client.sendPing()
-            if client.is_xhr():
-                client.unbind()
 
     def broadcast(self, pattern, channel, message):
         """
@@ -134,6 +130,7 @@ class Broker(object):
             # sent message to all clients
             for client in clients:
                 self.send_event(client, message, eid=eid)
+                client.reset_ping()
 
     def is_pattern_blocked(self, pattern):
         return False
