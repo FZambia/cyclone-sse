@@ -63,7 +63,9 @@ class Broker(object):
             self.unsubscribe(channel)
 
     def add_client(self, client):
-
+        """
+        registers new client in broker
+        """
         self._clients.append(client)
 
         client.set_ping()
@@ -71,17 +73,19 @@ class Broker(object):
         channels = client.get_channels()
         if not channels:
             raise cyclone.web.HTTPError(400)
+
         for channel in channels:
             self._subscribe(channel)
-
             if client not in self._channels[channel]:
                 self._channels[channel].append(client)
-
             log.msg("Client %s subscribed to %s" % (client.request.remote_ip, channel))
 
         self.send_cache(client)
 
     def remove_client(self, client):
+        """
+        unregisters client
+        """
         if client in self._clients:
             self._clients.remove(client)
             client.del_ping()
@@ -113,7 +117,7 @@ class Broker(object):
 
     def broadcast(self, pattern, channel, message):
         """
-        pass
+        sends message to all clients of certain channel
         """
         if self.is_pattern_blocked(pattern):
             return True
@@ -133,6 +137,9 @@ class Broker(object):
                 client.reset_ping()
 
     def is_pattern_blocked(self, pattern):
+        """
+        must return true if we do not want to send messages of this pattern
+        """
         return False
 
     def send_event(self, client, message, eid):
@@ -141,6 +148,9 @@ class Broker(object):
             client.unbind()
 
     def send_cache(self, client):
+        """
+        sends missed messages to client
+        """
         last_event_id = client.request.headers.get('Last-Event-Id', None)
         if last_event_id:
             i = 0
@@ -155,6 +165,9 @@ class Broker(object):
                         break
 
     def update_cache(self, eid, channel, message):
+        """
+        adds message into broker cache
+        """
         self._cache.append({
             'eid': eid,
             'channel': channel,
