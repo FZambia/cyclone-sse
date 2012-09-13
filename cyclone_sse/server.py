@@ -37,7 +37,7 @@ class ExtendedSSEHandler(SSEHandler):
         ping = defer.Deferred()
         ping.addCallback(self.send_ping)
         ping.addErrback(lambda err: log.err(err))
-        self.ping = reactor.callLater(5, ping.callback, True)
+        self.ping = reactor.callLater(30, ping.callback, True)
 
     def del_ping(self):
         if hasattr(self, 'ping') and isinstance(self.ping, base.DelayedCall):
