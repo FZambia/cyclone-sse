@@ -191,23 +191,25 @@
 							if (jQuery.isArray(lines)) {
 
 								jQuery.each(lines, function(index, line){
+									console.log(line);
+									
 								    if (rgx.event.test(line)) {
-								    	content = line.split(rgx.event)[1]
+								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
 								        if (content.length) {
-								        	fallbackEvent.eventType = jQuery.trim(content);
+								        	fallbackEvent.eventType = content;
 								        }
 								    } else if (rgx.id.test(line)) {
-								    	content = line.split(rgx.id)[1]
+								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
 								    	if (content.length) {
-								    		fallbackEvent.lastEventId = jQuery.trim(content);
+								    		fallbackEvent.lastEventId = content;
 								    	}
 								    } else if (rgx.retry.test(line)) {
-								    	content = $.trim(line.split(rgx.retry)[1]);
-								    	if (/^\d+$/.test(content)) {
+								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
+								    	if (content && /^\d+$/.test(content)) {
 								    		fallbackEvent.retry = parseInt(content);
 								    	}
 								    } else if (rgx.data.test(line)) {
-								    	content = line.split(rgx.data)[1];
+								    	content = line.split(':').slice(1).join(':');
 								    	if (content.length) {
 								    		tmpdata.push(jQuery.trim(content));
 								    	}
