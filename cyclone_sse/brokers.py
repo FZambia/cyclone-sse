@@ -48,19 +48,17 @@ class Broker(object):
 
     def _subscribe(self, channel):
         if channel not in self._channels:
-            self._channels[channel] = []
             log.msg("Subscribing entire server to %s" % channel)
+            self._channels[channel] = []
             if self._source:
                 self.subscribe(channel)
 
     def _unsubscribe(self, channel):
-        log.msg('Unsubscribing entire server from channel %s' % channel)
-        try:
+        if channel in self._channels:
+            log.msg('Unsubscribing entire server from channel %s' % channel)
             del self._channels[channel]
-        except KeyError:
-            pass
-        if self._source:
-            self.unsubscribe(channel)
+            if self._source:
+                self.unsubscribe(channel)
 
     def add_client(self, client):
         """
@@ -119,7 +117,7 @@ class Broker(object):
         """
         sends message to all clients of certain channel
         """
-        if self.is_pattern_blocked(pattern):
+        if self.is_pattern_blocked(pattern) or channel not in self._channels:
             return True
         clients = self._channels[channel]
         args = (str(len(clients)), pattern, channel, message)
