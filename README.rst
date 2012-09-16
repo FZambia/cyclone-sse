@@ -70,7 +70,7 @@ production, with all the basic features of standard daemons::
 
     twistd --uid=www-data --gid=www-data --reactor=epoll \
            --logfile=/var/log/cyclone_sse.log --pidfile=/var/run/cyclone_sse.pid \
-           cyclone__sse --port=8080 --listen=0.0.0.0
+           cyclone_sse --port=8080 --listen=0.0.0.0
 
 
 If your main server in behind Nginx you should proxy SSE like this::
