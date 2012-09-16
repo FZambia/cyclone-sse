@@ -1,3 +1,6 @@
+CYCLONE SSE
+===========
+
 inspired by `tornado_sse <https://github.com/truetug/tornado-sse>`_ by `Sergey Trofimov <https://github.com/truetug>`_
 
 --------
