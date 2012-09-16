@@ -21,6 +21,32 @@ Installing::
 	pip install git+https://github.com/FZambia/cyclone_sse.git
 
 
+Let's describe on example one of possible use cases::
+
+	1) Your web application's visitor opens a page. Let it be a text translation
+	of new Apple iPhone 6 presentation or, if you do not like Apple, Samsung Galaxy S4.
+	Javascript creates EventSource object and establishes connection with our cyclone
+	server. In GET parameters of url to connect we provide a channel name we want 
+	to listen to.
+	
+	2) Asynchronous broadcast server accepts this connection and keeps it open to
+	transfer data when this will be necessary.
+	
+	3) Wow, just now text translation's author got a specifications of new phone!!
+	Of course he wants to share it with our visitors. He submits special form with specification text.
+	Your php (or django, or nodejs, or ror) application saves it in database as usually.
+	Then in the simpliest case - this data must be POSTed on our cyclone server. We should
+	not forget to provide a channel name we want to publish this text in. Our cyclone server
+	has a special handler which listens to such POSTs and then broadcasts data to
+	all our clients (visitors). Event in web browser fires and our client side 
+	javascript code draws phone specification message in activity feed.
+	The new phone has 8 cores - what a good news!!
+
+
+That was only one example of using SSE technology, it is also well suited for things like comments,
+dynamic charts, stats etc..
+
+
 Server side
 ===========
 
