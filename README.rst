@@ -155,4 +155,19 @@ This broker allows you to listen to Redis channels and broadcasts incoming messa
 * AMQP
 Allows to listen AMQP toolkits, such as RabbitMQ, Qpid etc. In this case you should provide amqp specification XML file. txAMQP is used for this.
 
+------------
+Load testing
+------------
+On this moment application was tested on 1000 simultanious connections using HTTP broker.
+``/stats`` handler showed following state::
+	
+	[(u'cats', 264), (u'extras', 255), (u'dogs', 246), (u'base', 239), (u'general', 1004)]
+	
+As you can see, all clients were connected to ``general`` channel, and to one of other 4 channels.
+Test took place on macbook Air (core i5, 4GB RAM).
+Results are perfect - about 40 ms for broadcasting into channel ``general`` and about 10 ms for broadcasting into one of others channels.
+I will update this information as soon as I make new load tests.
+
+You can do your own measurements using ``client.py`` script from ``extras`` directory.
+
 
