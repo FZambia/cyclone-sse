@@ -124,7 +124,6 @@ class Broker(object):
         log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
 
         if clients:
-
             # put this message into cache
             eid = str(uuid.uuid4())
             self.update_cache(eid, channel, message)
