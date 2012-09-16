@@ -1,7 +1,8 @@
 inspired by `tornado_sse <https://github.com/truetug/tornado-sse>`_ by `Sergey Trofimov <https://github.com/truetug>`_
 
+--------
 Overview
-===========
+--------
 
 EventSource (or Server-Sent-Events) is a technology for providing push data (notifications, content updates) from a server to a browser client in the form of DOM events.
 Read these excellent articles for more information:
@@ -47,9 +48,9 @@ That was only one example of using SSE technology, it is also well suited for th
 dynamic charts, stats etc..
 
 
+-----------
 Server side
-===========
-
+-----------
 
 To run server in development::
 
@@ -81,8 +82,9 @@ If your main server in behind Nginx you should proxy SSE like this::
 Also read `this <https://github.com/FZambia/cyclone_sse/blob/master/docs/nginx.rst>`_ to avoid some possible problems
 
 
+-----------
 Client side
-===========
+-----------
 
 in browser::
 
