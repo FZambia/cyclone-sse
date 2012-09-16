@@ -137,6 +137,22 @@ custom event type in the first place of message array. (``["your_event_type", "d
 client side and decide what to do with incoming message. This is a payment for crossbrowser compatibility.
 
 
+----------------------------
+Available publish mechanisms
+----------------------------
 
+* HTTP
+The simpliest mechanism. All you need to do is to POST message on ``/publish`` url of broadcast server in the 
+following format::
+
+	{"key": "secret key to prove your right to publish",
+	"channel": "channel name",
+	"message": "new message data"}
+
+* Redis
+This broker allows you to listen to Redis channels and broadcasts incoming messages. txRedisApi library is used for this.
+
+* AMQP
+Allows to listen AMQP toolkits, such as RabbitMQ, Qpid etc. In this case you should provide amqp specification XML file. txAMQP is used for this.
 
 
