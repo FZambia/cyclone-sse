@@ -166,6 +166,7 @@ On this moment application was tested on 1000 simultanious connections using HTT
 As you can see, all clients were connected to ``general`` channel, and to one of other 4 channels.
 Test took place on macbook Air (core i5, 4GB RAM).
 Results are perfect - about 40 ms for broadcasting into channel ``general`` and about 10 ms for broadcasting into one of others channels.
+And this has been done in a nondaemon twistd mode - so real results could be much better.
 I will update this information as soon as I make new load tests.
 
 You can do your own measurements using ``client.py`` script from ``extras`` directory.

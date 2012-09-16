@@ -1,13 +1,11 @@
 from twisted.internet.protocol import Protocol
-from twisted.internet.defer import succeed
-from twisted.web.iweb import IBodyProducer
 from twisted.web.client import Agent,  HTTPConnectionPool
 from twisted.internet import reactor, defer
 from twisted.web.http_headers import Headers
 import random
-import urllib
-
 import sys
+
+
 try:
     NUM = int(sys.argv[1])
 except:
@@ -21,10 +19,8 @@ class Printer(Protocol):
         print bytes
 
     def connectionLost(self, reason):
-        #print reason
-        #reactor.stop()
         pass
-        #self.finished.callback(None)
+
 
 def http_get(channel):
     pool = HTTPConnectionPool(reactor)
@@ -47,6 +43,7 @@ def http_get(channel):
     )
     return df
 
+
 def cbRequest(response):
     print 'Response version:', response.version
     print 'Response code:', response.code
@@ -57,11 +54,14 @@ def cbRequest(response):
     response.deliverBody(Printer(finished))
     return finished
 
+
 def cbShutdown(ignored):
     reactor.stop()
 
+
 def error(err):
     print err
+
 
 if __name__ == '__main__':
     channels = ['base', 'extras', 'cats', 'dogs']
