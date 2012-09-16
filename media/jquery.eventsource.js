@@ -191,7 +191,6 @@
 							if (jQuery.isArray(lines)) {
 
 								jQuery.each(lines, function(index, line){
-									console.log(line);
 									
 								    if (rgx.event.test(line)) {
 								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
