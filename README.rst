@@ -158,14 +158,14 @@ Allows to listen AMQP toolkits, such as RabbitMQ, Qpid etc. In this case you sho
 ------------
 Load testing
 ------------
-On this moment application was tested on 1000 simultanious connections using HTTP broker.
+On this moment application was tested on 3600 simultanious connections using HTTP broker.
 ``/stats`` handler showed following state::
 	
-	[(u'cats', 264), (u'extras', 255), (u'dogs', 246), (u'base', 239), (u'general', 1004)]
+	[(u'cats', 946), (u'extras', 899), (u'dogs', 864), (u'base', 877), (u'general', 3586)]
 	
 As you can see, all clients were connected to ``general`` channel, and to one of other 4 channels.
-Test took place on local machine - macbook Air (core i5, 4GB RAM).
-Results are perfect - about 40 ms for broadcasting into channel ``general`` and about 10 ms for broadcasting into one of others channels.
+Test took place on local machine - macbook Air (core i5, 4GB RAM) using kqueue reactor.
+Results are perfect - about 200 ms for broadcasting into channel ``general`` and about 50 ms for broadcasting into one of others channels.
 And this has been done in a nondaemon twistd mode - so real results could be much better.
 I will update this information as soon as I make new load tests.
 
