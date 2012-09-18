@@ -22,7 +22,7 @@ Installing::
 
 	virtualenv --no-site-packages env
 	. env/bin/activate
-	pip install git+https://github.com/FZambia/cyclone_sse.git
+	pip install git+https://github.com/FZambia/cyclone-sse.git
 
 
 Let's describe on example one of possible use cases::
@@ -57,20 +57,20 @@ Server side
 
 To run server in development::
 
-	twistd -n cyclone_sse
+	twistd -n cyclone-sse
 
 
 Use ``-h`` option to see available options::
 
-	twistd -n cyclone_sse -h
+	twistd -n cyclone-sse -h
 
 
 Due to the power of ``twistd``, this application can be easily deployed in
 production, with all the basic features of standard daemons::
 
     twistd --uid=www-data --gid=www-data --reactor=epoll \
-           --logfile=/var/log/cyclone_sse.log --pidfile=/var/run/cyclone_sse.pid \
-           cyclone_sse --port=8080 --listen=0.0.0.0
+           --logfile=/var/log/cyclone-sse.log --pidfile=/var/run/cyclone-sse.pid \
+           cyclone-sse --port=8080 --listen=0.0.0.0
 
 
 If your main server in behind Nginx you should proxy SSE like this::
@@ -82,7 +82,7 @@ If your main server in behind Nginx you should proxy SSE like this::
     }
 
 
-Also read `this <https://github.com/FZambia/cyclone_sse/blob/master/docs/nginx.rst>`_ to avoid some possible problems
+Also read `this <https://github.com/FZambia/cyclone-sse/blob/master/docs/nginx.rst>`_ to avoid some possible problems
 
 
 -----------
@@ -96,8 +96,8 @@ in browser::
 		<head>
 			<meta charset="utf-8"/>
 			<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-			<script type="text/javascript" src="https://raw.github.com/FZambia/cyclone_sse/master/media/jquery.eventsource.js"></script>
-			<script type="text/javascript" src="https://raw.github.com/FZambia/cyclone_sse/master/media/jquery.sse.js"></script>
+			<script type="text/javascript" src="https://raw.github.com/FZambia/cyclone-sse/master/media/jquery.eventsource.js"></script>
+			<script type="text/javascript" src="https://raw.github.com/FZambia/cyclone-sse/master/media/jquery.sse.js"></script>
 			<script type="text/javascript">
 				$(function(){
 					$('#sse-handler').sse({'debug':true});

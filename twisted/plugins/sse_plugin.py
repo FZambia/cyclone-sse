@@ -66,8 +66,8 @@ class Options(usage.Options):
 
 class ServiceMaker(object):
     implements(service.IServiceMaker, IPlugin)
-    tapname = "cyclone_sse"
-    description = "Cyclone sse broadcasting server"
+    tapname = "cyclone-sse"
+    description = "SSE (EventSource) broadcasting server"
     options = Options
 
     def makeService(self, options):
