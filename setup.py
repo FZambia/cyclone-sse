@@ -24,7 +24,7 @@ setup(
     description="EventSource (SSE, Server-Sent-Events) broadcasting server with channel support, Last-Event-Id etc, based on top of cyclone web server",
     keywords="python non-blocking twisted cyclone sse eventsource broadcast http redis amqp rabbitmq",
     packages=["cyclone_sse", "twisted.plugins"],
-    package_data={"twisted": ["plugins/sse_plugin.py"]},
+    package_data={"twisted": ["plugins/cyclonesse_plugin.py"]},
     **extra
 )
 
