@@ -16,10 +16,10 @@ else:
 
 setup(
     name="cyclone-sse",
-    version="0.5",
+    version="0.6",
     author="Alexandr Emelin",
     author_email="frvzmb@gmail.com",
-    url=None,
+    url="https://github.com/FZambia/cyclone-sse",
     license="http://www.apache.org/licenses/LICENSE-2.0",
     description="EventSource (SSE, Server-Sent-Events) broadcasting server with channel support, Last-Event-Id etc, based on top of cyclone web server",
     keywords="python non-blocking twisted cyclone sse eventsource broadcast http redis amqp rabbitmq",
