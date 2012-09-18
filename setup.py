@@ -2,6 +2,17 @@ import sys
 
 requires = ["twisted", "cyclone", "txAMQP"]
 
+try:
+    # to avoid installation problems on centos 5
+    # which has no distributions for OpenSSL 0.9.8f
+    from distutils.version import StrictVersion
+    import platform
+    os, version, _type = platform.linux_distribution()
+    if os == "CentOS" and StrictVersion(version) < StrictVersion('6.0'):
+        requires.insert(0, "pyopenssl==0.12")
+except:
+    pass
+
 from distutils import log
 from distutils.core import setup
 
