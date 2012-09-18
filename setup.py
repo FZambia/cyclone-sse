@@ -1,6 +1,6 @@
 import sys
 
-requires = ["twisted", "cyclone"]
+requires = ["twisted", "cyclone", "txAMQP"]
 
 from distutils import log
 from distutils.core import setup
