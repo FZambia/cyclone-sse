@@ -22,7 +22,7 @@ Installing::
 
 	virtualenv --no-site-packages env
 	. env/bin/activate
-	pip install git+https://github.com/FZambia/cyclone-sse.git
+	pip install cyclone-sse
 
 
 Let's describe on example one of possible use cases::
@@ -172,3 +172,9 @@ I will update this information as soon as I make new load tests.
 You can do your own measurements using ``client.py`` script from ``extras`` directory.
 
 
+------------
+Known Issues
+------------
+
+* According to `http://stackoverflow.com/questions/7340784/easy-install-pyopenssl-error <http://stackoverflow.com/questions/7340784/easy-install-pyopenssl-error>`_
+their is no OpenSSL 0.9.8f distribution for ``CentOS 5``. So for CentOS 5 we use ``pyopenssl`` of version 0.12 (not latest)
