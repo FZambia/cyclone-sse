@@ -4,12 +4,18 @@ from twisted.internet import reactor, defer
 from twisted.web.http_headers import Headers
 import random
 import sys
+from optparse import OptionParser
 
 
-try:
-    NUM = int(sys.argv[1])
-except:
-    NUM = 350
+parser = OptionParser()
+parser.add_option("-n", "--num", dest="num",
+                  help="amount of connections", default=350)
+parser.add_option("-u", "--url", dest="url",
+                  help="server url", default="http://localhost:8888/")
+(options, args) = parser.parse_args()
+NUM = options.num
+URL = options.url
+
 
 class Printer(Protocol):
     def __init__(self, finished):
@@ -27,7 +33,7 @@ def http_get(channel):
     agent = Agent(reactor, pool=pool)
     df = agent.request(
         'GET',
-        'http://localhost:8888/?channels=%s&channels=general' % channel,
+        '%s?channels=%s&channels=general' % (URL, channel),
         Headers({'User-Agent': ['twisted-monitor'],       
                 'Origin': ['http://localhost:8000'],
                 'Accept-Language': ['ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3'],
@@ -65,8 +71,8 @@ def error(err):
 
 if __name__ == '__main__':
     channels = ['base', 'extras', 'cats', 'dogs']
-    
-    for i in range (1, NUM):
+
+    for i in range(NUM):
         channel = random.choice(channels)
         df = http_get(channel)
         df.addCallback(cbRequest)
