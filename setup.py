@@ -28,9 +28,12 @@ setup(
     **extra
 )
 
-
+# Make Twisted regenerate the dropin.cache, if possible.  This is necessary
+# because in a site-wide install, dropin.cache cannot be rewritten by
+# normal users.
 try:
     from twisted.plugin import IPlugin, getPlugins
+except ImportError:
+    pass
+else:
     list(getPlugins(IPlugin))
-except:
-    log.warn("*** Failed to update Twisted plugin cache. ***")
