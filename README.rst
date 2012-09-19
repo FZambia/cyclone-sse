@@ -15,7 +15,8 @@ Read these excellent articles for more information:
 `html5doctor.com <http://html5doctor.com/server-sent-events/>`_
 
 
-The goal of this repo is to provide you a server for SSE event broadcasting and to give some useful information what to do on client side. 
+The goal of this repo is to provide you a server for SSE event broadcasting and to give some useful information what to do on client side.
+Broadcasting server built on top of `cyclone <https://github.com/fiorix/cyclone>`_ - it is fully asynchronous and extremely fast.
 
 
 Installing::
