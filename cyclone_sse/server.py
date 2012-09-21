@@ -86,11 +86,15 @@ class BroadcastHandler(ExtendedSSEHandler):
         channels = self.get_arguments('channels')
         return channels
 
+    def authorize(self):
+        pass
+
     def bind(self):
         """
         called when new connection established 
         """
         log.msg(self.request.headers)
+        self.authorize()
         self.write('\n\n')
         self.flush()
         self.application.broker.add_client(self)
