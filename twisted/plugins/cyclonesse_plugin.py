@@ -20,6 +20,7 @@ from twisted.application import internet
 from twisted.application import service
 from twisted.plugin import IPlugin
 from twisted.python import usage
+from twisted.python import reflect
 from zope.interface import implements
 
 from cyclone_sse.server import App
@@ -36,6 +37,7 @@ class Options(usage.Options):
     optParameters = [
         ["port", "p", 8888, "tcp port to listen on", int],
         ["listen", "l", "127.0.0.1", "interface to listen on"],
+        ["app", "r", None, "custom application to run"],
 
         ["use-ssl", None, 0, "use ssl", int],
         ["ssl-port", None, 8443, "port to listen on for ssl", int],
@@ -74,15 +76,20 @@ class ServiceMaker(object):
         srv = service.MultiService()
         s = None
 
+        if options["app"]:
+            app = reflect.namedAny(options["app"])
+        else:
+            app = App
+
         # http
-        s = internet.TCPServer(options["port"], App(options),
+        s = internet.TCPServer(options["port"], app(options),
                                interface=options["listen"])
         s.setServiceParent(srv)
 
         # https
         if options["use-ssl"]:
             if ssl_support:
-                s = internet.SSLServer(options["ssl-port"], App(options),
+                s = internet.SSLServer(options["ssl-port"], app(options),
                                        ssl.DefaultOpenSSLContextFactory(
                                        options["ssl-key"],
                                        options["ssl-cert"]),
