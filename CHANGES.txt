@@ -1,0 +1,12 @@
+CYCLONE SSE CHANGES
+===================
+
+0.6.5
+-----
+
+* possibility to launch cyclone-sse twisted plugin with custom application (which can have custom handlers or brokers)
+
+0.6.1
+-----
+
+* first pypi release
