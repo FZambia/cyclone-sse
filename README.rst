@@ -172,8 +172,17 @@ I will update this information as soon as I make new load tests.
 
 You can do your own measurements using ``client.py`` script from ``extras`` directory.
 
+---------------------------
+Extending standard handlers
+---------------------------
+You may want to extend cyclone-sse.
+In this case you can run cyclone-sse plugin
+with option --app that allows you to use your own
+cyclone.web.Application. So you can decide what handlers
+or brokers you need, write your own or extend existing
+from cyclone_sse.handlers and cyclone_sse.brokers.
 
-------------
+
 Known Issues
 ------------
 
