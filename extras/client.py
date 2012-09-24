@@ -5,7 +5,7 @@ from twisted.web.http_headers import Headers
 import random
 import sys
 from optparse import OptionParser
-
+import time
 
 parser = OptionParser()
 parser.add_option("-n", "--num", dest="num",
@@ -31,6 +31,7 @@ class Printer(Protocol):
 def http_get(channel):
     pool = HTTPConnectionPool(reactor)
     agent = Agent(reactor, pool=pool)
+    agent._connectTimeout = 1
     df = agent.request(
         'GET',
         '%s?channels=%s&channels=general' % (URL, channel),
@@ -72,7 +73,7 @@ def error(err):
 if __name__ == '__main__':
     channels = ['base', 'extras', 'cats', 'dogs']
 
-    for i in range(NUM):
+    for i in range(int(NUM)):
         channel = random.choice(channels)
         df = http_get(channel)
         df.addCallback(cbRequest)

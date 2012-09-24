@@ -36,7 +36,7 @@ class Broker(object):
         self._channels = {}
         self._cache = []
         self._cache_size = 50
-        self._clients = []
+        self._clients = {}
         self._settings = settings
         self.setup(self._settings)
 
@@ -49,7 +49,7 @@ class Broker(object):
     def _subscribe(self, channel):
         if channel not in self._channels:
             log.msg("Subscribing entire server to %s" % channel)
-            self._channels[channel] = []
+            self._channels[channel] = {}
             if self._source:
                 self.subscribe(channel)
 
@@ -61,6 +61,28 @@ class Broker(object):
                 self.unsubscribe(channel)
 
     def add_client(self, client):
+        """
+        registers new client in broker
+        """
+        uid = str(uuid.uuid4())
+        client.uid = uid
+        self._clients[uid] = client
+
+        client.set_ping()
+
+        channels = client.get_channels()
+        if not channels:
+            raise cyclone.web.HTTPError(400)
+
+        for channel in channels:
+            self._subscribe(channel)
+            if client.uid not in self._channels[channel]:
+                self._channels[channel][uid] = 1
+            log.msg("Client %s subscribed to %s" % (client.request.remote_ip, channel))
+
+        self.send_cache(client)
+
+    def add_client_old(self, client):
         """
         registers new client in broker
         """
@@ -81,6 +103,33 @@ class Broker(object):
         self.send_cache(client)
 
     def remove_client(self, client):
+        """
+        unregisters client
+        """
+        if client.uid in self._clients:
+            del self._clients[client.uid]
+            client.del_ping()
+            try:
+                client.flush()
+                client.finish()
+            except defer.AlreadyCalledError:
+                # client connection has already been finished
+                pass
+
+        # channels that have no clients
+        empty = []
+
+        for channel, clients in self._channels.iteritems():
+            if client.uid in clients:
+                log.msg('Unsubscribing client from channel %s' % channel)
+                del clients[client.uid]
+            if not clients:
+                empty.append(channel)
+
+        for channel in empty:
+            self._unsubscribe(channel)
+
+    def remove_client_old(self, client):
         """
         unregisters client
         """
@@ -129,9 +178,11 @@ class Broker(object):
             self.update_cache(eid, channel, message)
 
             # sent message to all clients
-            for client in clients:
-                self.send_event(client, message, eid=eid)
-                client.reset_ping()
+            for uid in clients:
+                client = self._clients.get(uid, None)
+                if client:
+                    self.send_event(client, message, eid=eid)
+                    client.reset_ping()
 
     def is_pattern_blocked(self, pattern):
         """
