@@ -33,10 +33,10 @@ class Broker(object):
     def __init__(self, settings, name='unknown'):
         self._name = name
         self._source = None
+        self._clients = {}
         self._channels = {}
         self._cache = []
         self._cache_size = 50
-        self._clients = {}
         self._settings = settings
         self.setup(self._settings)
 
@@ -48,15 +48,15 @@ class Broker(object):
 
     def _subscribe(self, channel):
         if channel not in self._channels:
-            log.msg("Subscribing entire server to %s" % channel)
             self._channels[channel] = {}
+            log.msg("Subscribing entire server to %s" % channel)
             if self._source:
                 self.subscribe(channel)
 
     def _unsubscribe(self, channel):
         if channel in self._channels:
-            log.msg('Unsubscribing entire server from channel %s' % channel)
             del self._channels[channel]
+            log.msg('Unsubscribing entire server from channel %s' % channel)
             if self._source:
                 self.unsubscribe(channel)
 
@@ -64,40 +64,17 @@ class Broker(object):
         """
         registers new client in broker
         """
-        uid = str(uuid.uuid4())
-        client.uid = uid
-        self._clients[uid] = client
-
-        client.set_ping()
-
-        channels = client.get_channels()
-        if not channels:
+        client.uid = str(uuid.uuid4())
+        client.channels = client.get_channels()
+        if not client.channels:
             raise cyclone.web.HTTPError(400)
 
-        for channel in channels:
-            self._subscribe(channel)
-            if client.uid not in self._channels[channel]:
-                self._channels[channel][uid] = 1
-            log.msg("Client %s subscribed to %s" % (client.request.remote_ip, channel))
-
-        self.send_cache(client)
-
-    def add_client_old(self, client):
-        """
-        registers new client in broker
-        """
-        self._clients.append(client)
-
+        self._clients[client.uid] = client
         client.set_ping()
 
-        channels = client.get_channels()
-        if not channels:
-            raise cyclone.web.HTTPError(400)
-
-        for channel in channels:
+        for channel in client.channels:
             self._subscribe(channel)
-            if client not in self._channels[channel]:
-                self._channels[channel].append(client)
+            self._channels[channel][client.uid] = 1
             log.msg("Client %s subscribed to %s" % (client.request.remote_ip, channel))
 
         self.send_cache(client)
@@ -119,40 +96,16 @@ class Broker(object):
         # channels that have no clients
         empty = []
 
-        for channel, clients in self._channels.iteritems():
-            if client.uid in clients:
-                log.msg('Unsubscribing client from channel %s' % channel)
+        # removing client from channels
+        for channel in client.channels:
+            clients = self._channels.get(channel, None)
+            if clients and client.uid in clients:
                 del clients[client.uid]
+                log.msg('Unsubscribing client from channel %s' % channel)
             if not clients:
                 empty.append(channel)
 
-        for channel in empty:
-            self._unsubscribe(channel)
-
-    def remove_client_old(self, client):
-        """
-        unregisters client
-        """
-        if client in self._clients:
-            self._clients.remove(client)
-            client.del_ping()
-            try:
-                client.flush()
-                client.finish()
-            except defer.AlreadyCalledError:
-                # client connection has already been finished
-                pass
-
-        # channels that have no clients
-        empty = []
-
-        for channel, clients in self._channels.iteritems():
-            if client in clients:
-                log.msg('Unsubscribing client from channel %s' % channel)
-                clients.remove(client)
-            if len(clients) == 0:
-                empty.append(channel)
-
+        # clean server subscription
         for channel in empty:
             self._unsubscribe(channel)
 
@@ -166,13 +119,14 @@ class Broker(object):
         """
         sends message to all clients of certain channel
         """
-        if self.is_pattern_blocked(pattern) or channel not in self._channels:
+        if self.is_pattern_blocked(pattern):
             return True
-        clients = self._channels[channel]
-        args = (str(len(clients)), pattern, channel, message)
-        log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
+        clients = self._channels.get(channel, None)
 
         if clients:
+            args = (str(len(clients)), pattern, channel, message)
+            log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)            
+
             # put this message into cache
             eid = str(uuid.uuid4())
             self.update_cache(eid, channel, message)
