@@ -53,7 +53,7 @@ After setup go to : ``http://localhost:9090/``::
 	    server {
 	        limit_conn addr 10;
 	        listen       9090;
-	        server_name  _;
+	        server_name  localhost;
 	
 	        #charset koi8-r;
 	
@@ -67,7 +67,7 @@ After setup go to : ``http://localhost:9090/``::
 	
 	        location / {
 	            proxy_pass http://127.0.0.1:8000;
-	            proxy_redirect http://127.0.0.1:8000 http://lab1.dev.mail.ru:9090;
+	            proxy_redirect http://127.0.0.1:8000 http://localhost:9090;
 	        }
 	
 	        # redirect server error pages to the static page /50x.html
