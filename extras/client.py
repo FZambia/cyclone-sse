@@ -4,16 +4,20 @@ from twisted.internet import reactor, defer
 from twisted.web.http_headers import Headers
 import random
 import sys
-from optparse import OptionParser
 import time
+from optparse import OptionParser
+
 
 parser = OptionParser()
 parser.add_option("-n", "--num", dest="num",
                   help="amount of connections", default=350)
+parser.add_option("-c", "--concurrency", dest="concurrency",
+                  help="concurrent connections", default=50)
 parser.add_option("-u", "--url", dest="url",
                   help="server url", default="http://localhost:8888/")
 (options, args) = parser.parse_args()
-NUM = options.num
+NUM = int(options.num)
+CON = int(options.concurrency)
 URL = options.url
 
 
@@ -22,7 +26,8 @@ class Printer(Protocol):
         self.finished = finished
 
     def dataReceived(self, bytes):
-        print bytes
+        if bytes.strip().strip('\n') != "":
+            print bytes
 
     def connectionLost(self, reason):
         pass
@@ -30,8 +35,7 @@ class Printer(Protocol):
 
 def http_get(channel):
     pool = HTTPConnectionPool(reactor)
-    agent = Agent(reactor, pool=pool)
-    agent._connectTimeout = 1
+    agent = Agent(reactor, pool=pool, connectTimeout=5)
     df = agent.request(
         'GET',
         '%s?channels=%s&channels=general' % (URL, channel),
@@ -52,11 +56,11 @@ def http_get(channel):
 
 
 def cbRequest(response):
-    print 'Response version:', response.version
-    print 'Response code:', response.code
-    print 'Response phrase:', response.phrase
-    print 'Response headers:'
-    print list(response.headers.getAllRawHeaders())
+    #print 'Response version:', response.version
+    #print 'Response code:', response.code
+    #print 'Response phrase:', response.phrase
+    #print 'Response headers:'
+    #print list(response.headers.getAllRawHeaders())
     finished = defer.Deferred()
     response.deliverBody(Printer(finished))
     return finished
@@ -71,13 +75,22 @@ def error(err):
 
 
 if __name__ == '__main__':
-    channels = ['base', 'extras', 'cats', 'dogs']
-
-    for i in range(int(NUM)):
-        channel = random.choice(channels)
-        df = http_get(channel)
-        df.addCallback(cbRequest)
-        df.addErrback(error)
-        df.addBoth(cbShutdown)
-    
+    channels = ['base', 'extras', 'cats', 'dogs']       
+    c = NUM // CON
+    all = 0
+    def connect(c):
+        global all
+        if c == 0:
+            return True
+        for i in range(CON):
+            all+=1
+            channel = random.choice(channels)
+            df = http_get(channel)
+            df.addCallback(cbRequest)
+            df.addErrback(error)
+            df.addBoth(cbShutdown)
+        c -= 1
+        print all
+        reactor.callLater(1, connect, c)
+    reactor.callLater(1, connect, c)
     reactor.run()
