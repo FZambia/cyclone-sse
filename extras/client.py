@@ -11,10 +11,13 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("-n", "--num", dest="num",
                   help="amount of connections", default=350)
+parser.add_option("-c", "--concurrency", dest="concurrency",
+                  help="concurrent connections", default=50)
 parser.add_option("-u", "--url", dest="url",
                   help="server url", default="http://localhost:8888/")
 (options, args) = parser.parse_args()
-NUM = options.num
+NUM = int(options.num)
+CON = int(options.concurrency)
 URL = options.url
 
 
@@ -23,7 +26,8 @@ class Printer(Protocol):
         self.finished = finished
 
     def dataReceived(self, bytes):
-        print bytes
+        if bytes.strip().strip('\n') != "":
+            print bytes
 
     def connectionLost(self, reason):
         pass
@@ -52,11 +56,11 @@ def http_get(channel):
 
 
 def cbRequest(response):
-    print 'Response version:', response.version
-    print 'Response code:', response.code
-    print 'Response phrase:', response.phrase
-    print 'Response headers:'
-    print list(response.headers.getAllRawHeaders())
+    #print 'Response version:', response.version
+    #print 'Response code:', response.code
+    #print 'Response phrase:', response.phrase
+    #print 'Response headers:'
+    #print list(response.headers.getAllRawHeaders())
     finished = defer.Deferred()
     response.deliverBody(Printer(finished))
     return finished
@@ -72,13 +76,13 @@ def error(err):
 
 if __name__ == '__main__':
     channels = ['base', 'extras', 'cats', 'dogs']       
-    c = int(NUM) // 50
+    c = NUM // CON
     all = 0
     def connect(c):
         global all
         if c == 0:
             return True
-        for i in range(50):
+        for i in range(CON):
             all+=1
             channel = random.choice(channels)
             df = http_get(channel)
