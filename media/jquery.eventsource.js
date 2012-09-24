@@ -162,83 +162,90 @@
 							}
 							
 						},
-						success: function(data) {
-
+						success: function(rawData) {
 							var label = options.label;
-
-							rows = data.split('\n');
-							lines = jQuery.grep(rows, function(row){
-							    return row !=='';
-							});
-
-							var fallbackEvent = {
-								lastEventId: null,
-								data: null,
-								retry: null,
-								type: "message",
-								timeStamp: new Date().getTime()
-							};
-							var tmpdata = [];
-							var streamData = null;
-
-							var rgx = {
-								"id": /^id:/,
-								"event": /^event:/,
-								"retry": /^retry:/,
-								"data": /^data:/
-							}
-
-							if (jQuery.isArray(lines)) {
-
-								jQuery.each(lines, function(index, line){
-									
-								    if (rgx.event.test(line)) {
-								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
-								        if (content.length) {
-								        	fallbackEvent.eventType = content;
-								        }
-								    } else if (rgx.id.test(line)) {
-								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
-								    	if (content.length) {
-								    		fallbackEvent.lastEventId = content;
-								    	}
-								    } else if (rgx.retry.test(line)) {
-								    	content = jQuery.trim(line.split(':').slice(1).join(':'));
-								    	if (content && /^\d+$/.test(content)) {
-								    		fallbackEvent.retry = parseInt(content);
-								    	}
-								    } else if (rgx.data.test(line)) {
-								    	content = line.split(':').slice(1).join(':');
-								    	if (content.length) {
-								    		tmpdata.push(jQuery.trim(content));
-								    	}
-								    }
+							var messages = rawData.split('\n\n');
+							for (i in messages) {
+								var data = messages[i];
+								if (data === "") {
+									continue;
+								}
+								rows = data.split('\n');
+								lines = jQuery.grep(rows, function(row){
+								    return row !=='';
 								});
-
-								if (tmpdata.length) {
-									data = tmpdata.join('\n');
-									fallbackEvent.data = data;
-									if (options.dataType === "json") {
-										streamData = jQuery.parseJSON(data);
-									} else {
-										streamData = data;
+	
+								var fallbackEvent = {
+									lastEventId: null,
+									data: null,
+									retry: null,
+									type: "message",
+									timeStamp: new Date().getTime()
+								};
+								var tmpdata = [];
+								var streamData = null;
+	
+								var rgx = {
+									"id": /^id:/,
+									"event": /^event:/,
+									"retry": /^retry:/,
+									"data": /^data:/
+								}
+	
+								if (jQuery.isArray(lines)) {
+	
+									jQuery.each(lines, function(index, line){
+										
+									    if (rgx.event.test(line)) {
+									    	content = jQuery.trim(line.split(':').slice(1).join(':'));
+									        if (content.length) {
+									        	fallbackEvent.eventType = content;
+									        }
+									    } else if (rgx.id.test(line)) {
+									    	content = jQuery.trim(line.split(':').slice(1).join(':'));
+									    	if (content.length) {
+									    		fallbackEvent.lastEventId = content;
+									    	}
+									    } else if (rgx.retry.test(line)) {
+									    	content = jQuery.trim(line.split(':').slice(1).join(':'));
+									    	if (content && /^\d+$/.test(content)) {
+									    		fallbackEvent.retry = parseInt(content);
+									    	}
+									    } else if (rgx.data.test(line)) {
+									    	content = line.split(':').slice(1).join(':');
+									    	if (content.length) {
+									    		tmpdata.push(jQuery.trim(content));
+									    	}
+									    }
+									});
+	
+									if (tmpdata.length) {
+										data = tmpdata.join('\n');
+										fallbackEvent.data = data;
+										if (options.dataType === "json") {
+											streamData = jQuery.parseJSON(data);
+										} else {
+											streamData = data;
+										}
 									}
+	
 								}
-
+	
+								if (stream.cache[label]) {
+	
+									this.label = label;
+	
+									stream.cache[label].retry = stream.cache[label].options.retry = fallbackEvent.retry;
+									if (fallbackEvent.lastEventId) {
+										stream.cache[label].lastEventId = stream.cache[label].options.lastEventId = fallbackEvent.lastEventId;
+									}
+									stream.cache[label].history.push([fallbackEvent, streamData])//[stream.cache[label].lastEventId] = parsedData;
+	
+									stream.cache[label].options.message.call(this, streamData, fallbackEvent);
+								}
 							}
-
+							
 							if (stream.cache[label]) {
-
-								this.label = label;
-
-								stream.cache[label].retry = stream.cache[label].options.retry = fallbackEvent.retry;
-								if (fallbackEvent.lastEventId) {
-									stream.cache[label].lastEventId = stream.cache[label].options.lastEventId = fallbackEvent.lastEventId;
-								}
-								stream.cache[label].history.push([fallbackEvent, streamData])//[stream.cache[label].lastEventId] = parsedData;
-
-								stream.cache[label].options.message.call(this, streamData, fallbackEvent);
-
 								setTimeout(
 									function() {
 										pluginFns._private.openPollingSource.call(this, options);
