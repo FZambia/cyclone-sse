@@ -27,7 +27,7 @@ else:
 
 setup(
     name="cyclone-sse",
-    version="0.7.1",
+    version="0.7.2",
     author="Alexandr Emelin",
     author_email="frvzmb@gmail.com",
     url="https://github.com/FZambia/cyclone-sse",
