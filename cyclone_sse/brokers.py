@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import uuid
+from copy import copy
 
 from twisted.internet import defer
 from twisted.internet import reactor
@@ -121,7 +122,7 @@ class Broker(object):
         """
         if self.is_pattern_blocked(pattern):
             return True
-        clients = self._channels.get(channel, None)
+        clients = copy(self._channels.get(channel, None))
 
         if clients:
             args = (str(len(clients)), pattern, channel, message)
