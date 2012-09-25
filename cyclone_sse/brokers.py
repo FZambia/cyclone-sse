@@ -136,8 +136,8 @@ class Broker(object):
             for uid in clients:
                 client = self._clients.get(uid, None)
                 if client:
-                    self.send_event(client, message, eid=eid)
                     client.reset_ping()
+                    self.send_event(client, message, eid=eid)
 
     def is_pattern_blocked(self, pattern):
         """
