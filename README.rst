@@ -155,7 +155,7 @@ This broker allows you to listen to Redis channels and broadcasts incoming messa
 
 * AMQP
 Allows to listen AMQP toolkits, such as RabbitMQ, Qpid etc. In this case you should provide amqp specification XML file. txAMQP is used for this. You can 
-find specifications `here<http://bazaar.launchpad.net/~txamqpteam/txamqp/trunk/files/head:/src/specs/>`_
+find specifications `here <http://bazaar.launchpad.net/~txamqpteam/txamqp/trunk/files/head:/src/specs/>`_
 
 ------------
 Load testing
