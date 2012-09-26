@@ -114,6 +114,8 @@ in browser::
 We use an extremely modified `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_.
 If browser does not natively support EventSource, then we use ``long-polling``, so it works nice even in Internet Explorer.
 
+This is a bit naive example of client code. Use jquery.sse.js plugin to get more granular control on incoming events. I will provide more information soon.
+
 
 To check that everything work fine with redis - open your web browser console, then go to redis console (``redis-cli``) and type::
 
