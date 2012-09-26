@@ -1,20 +1,22 @@
 import sys
+import platform
+from distutils import log
+from distutils.core import setup
+from distutils.version import StrictVersion
+
 
 requires = ["twisted", "cyclone", "txAMQP"]
+
 
 try:
     # to avoid installation problems on centos 5
     # which has no distributions for OpenSSL 0.9.8f
-    from distutils.version import StrictVersion
-    import platform
-    os, version, _type = platform.linux_distribution()
-    if os == "CentOS" and StrictVersion(version) < StrictVersion('6.0'):
+    distname, version, _id = platform.linux_distribution()
+    if distname == "CentOS" and StrictVersion(version) < StrictVersion('6.0'):
         requires.insert(0, "pyopenssl==0.12")
 except:
     pass
 
-from distutils import log
-from distutils.core import setup
 
 # PyPy and setuptools don't get along too well, yet.
 if sys.subversion[0].lower().startswith('pypy'):
@@ -27,7 +29,7 @@ else:
 
 setup(
     name="cyclone-sse",
-    version="0.7.2",
+    version="0.7.3",
     author="Alexandr Emelin",
     author_email="frvzmb@gmail.com",
     url="https://github.com/FZambia/cyclone-sse",
