@@ -1,6 +1,11 @@
 CYCLONE SSE CHANGES
 ===================
 
+0.7.3
+-----
+* fix installation problems on CentOS 5
+* using dicts for channels and clients state
+
 0.6.5
 -----
 
