@@ -1,17 +1,17 @@
-;(function(jQuery){
-    jQuery.extend({
-        sse: function(options) {
-            var defaults = {
-            	url: '/sse/',
-            	selector: '.sse',
-            	attr: 'data-sse-channels',
-                debug: false,
-                label: "default",
-                type: "json",
-                eventPrefix: 'sse.'
-            }
+;(function(jQuery) {
+	jQuery.extend({
+		sse : function(options) {
+			var defaults = {
+				url : '/sse/',
+				selector : '.sse',
+				attr : 'data-sse-channels',
+				debug : false,
+				label : "default",
+				type : "json",
+				eventPrefix : 'sse.'
+			}
 
-            var options = jQuery.extend(defaults, options);
+			var options = jQuery.extend(defaults, options);
 
 			function init() {
 				if (!jQuery.eventsource) {
@@ -37,7 +37,7 @@
 						for (i in channel_list) {
 							var c = jQuery.trim(channel_list[i]);
 
-							if (!(c in compliance)) {
+							if (!( c in compliance)) {
 								compliance[c] = [];
 							}
 							compliance[c].push(handler);
@@ -55,66 +55,67 @@
 					return;
 				}
 
-		        // make appropriate query
-		        var query = jQuery.param({'channels': channels}, true);
-		        if (options.debug === true) {
-		        	console.log('sse url: ' + options.url + '?' + query);
-		        }
+				// make appropriate query
+				var query = jQuery.param({
+					'channels' : channels
+				}, true);
+				if (options.debug === true) {
+					console.log('sse url: ' + options.url + '?' + query);
+				}
 
 				// create EventSource object using Rick Waldron's jquery.eventsource.js
-		        jQuery.eventsource({
-		            label: options.label,
-		            url: options.url,
-		            data: query,
-		            dataType: options.type,
+				jQuery.eventsource({
+					label : options.label,
+					url : options.url,
+					data : query,
+					dataType : options.type,
 
-		            open: function() {
-		            	if (options.debug === true) {
-		            		console.log('sse connection opened');
-		            	}
-		                handlers.each(function(index, element){
-		                	 jQuery(element).trigger('sse.open');
-		                });
-		            },
+					open : function() {
+						if (options.debug === true) {
+							console.log('sse connection opened');
+						}
+						handlers.each(function(index, element) {
+							jQuery(element).trigger('sse.open');
+						});
+					},
 
-		            error: function(err) {
-		            	if (options.debug === true) {
-		            		console.log('sse connection error');
-		            		console.log(msg);
-		            	}
-		            	handlers.each(function(index, element){
-		                	jQuery(element).trigger('sse.error', err);
-		                });
-		            },
+					error : function(err) {
+						if (options.debug === true) {
+							console.log('sse connection error');
+							console.log(msg);
+						}
+						handlers.each(function(index, element) {
+							jQuery(element).trigger('sse.error', err);
+						});
+					},
 
-		            message: function(msg, event) {
-		            	if (options.debug === true) {
-		            		console.log(msg);
-		            		console.log(event);
-		            	}
-		            	// msg can be null in case of ping sse messages
-		            	if (msg) {
-		                 	var customEvent = options.eventPrefix;
+					message : function(msg, event) {
+						if (options.debug === true) {
+							console.log(msg);
+							console.log(event);
+						}
+						// msg can be null in case of ping sse messages
+						if (msg) {
+							var customEvent = options.eventPrefix;
 							var eventType = msg[0];
 							var eventData = msg[1];
-		                	customEvent += eventType;
-		                	if (options.debug === true) {
-		                		console.log("triggering event: " + customEvent);
-		                	}
-		                	if (eventType in compliance) {
-		                		var eventHandlers = compliance[eventType];
-		                		jQuery.each(eventHandlers, function(index, element){
-		                			jQuery(element).trigger(customEvent, eventData);
-		                		});
-		                	}
-		                }
-		            }
-		        });
+							customEvent += eventType;
+							if (options.debug === true) {
+								console.log("triggering event: " + customEvent);
+							}
+							if ( eventType in compliance) {
+								var eventHandlers = compliance[eventType];
+								jQuery.each(eventHandlers, function(index, element) {
+									jQuery(element).trigger(customEvent, eventData);
+								});
+							}
+						}
+					}
+				});
 			}
 
 			return init();
 
-        }
-    })
-})
-(jQuery)
+		}
+	})
+})(jQuery)
