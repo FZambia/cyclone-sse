@@ -63,6 +63,11 @@ class Options(usage.Options):
         ["amqp-exchange-name", None, "sse-cyclone-server", "amqp exchange name"],
         ["amqp-exchange-type", None, "direct", "amqp exchange type"],
         ["amqp-channel", None, 1, "amqp channel number", int],
+
+        ["monitor", None, "", "server state monitoring mechanism (graphite)"],
+        ["monitor-period", None, 60, "period in seconds for state monitoring", int],
+
+        ["graphite-url", None, "", "graphite server url address"],
     ]
 
 
