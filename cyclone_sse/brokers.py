@@ -47,6 +47,9 @@ class Broker(object):
     def connect(self, settings):
         raise NotImplementedError('please, provide implementation for connect method')
 
+    def stats(self):
+        return [(k, len(v)) for k, v in self._channels.iteritems()]
+
     def _subscribe(self, channel):
         if channel not in self._channels:
             self._channels[channel] = {}

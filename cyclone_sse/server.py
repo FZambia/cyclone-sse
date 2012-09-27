@@ -23,6 +23,8 @@ from cyclone_sse.brokers import HttpBroker
 from cyclone_sse.brokers import RedisBroker
 from cyclone_sse.brokers import AmqpBroker
 
+from cyclone_sse.periodic import UdpExport
+
 
 class App(cyclone.web.Application):
     def __init__(self, settings):
@@ -40,5 +42,7 @@ class App(cyclone.web.Application):
             handlers.append((r"/publish", PublishHandler))
 
         self.broker = broker(settings)
-        cyclone.web.Application.__init__(self, handlers)
 
+        graphite = UdpExport(self.broker, '127.0.0.1', 8000, 30)
+
+        cyclone.web.Application.__init__(self, handlers)

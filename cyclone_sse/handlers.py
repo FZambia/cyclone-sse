@@ -109,7 +109,7 @@ class StatsHandler(cyclone.web.RequestHandler):
     """
     def get_stats(self):
         self.set_header("Content-Type", "application/json")
-        return json.dumps([(k, len(v)) for k, v in self.application.broker._channels.iteritems()])
+        return json.dumps(self.application.broker.stats())
 
     def get(self):
         stats = self.get_stats()
