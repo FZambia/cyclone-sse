@@ -23,6 +23,8 @@ from cyclone_sse.brokers import HttpBroker
 from cyclone_sse.brokers import RedisBroker
 from cyclone_sse.brokers import AmqpBroker
 
+from cyclone_sse.periodic import GraphiteExport
+
 
 class App(cyclone.web.Application):
     def __init__(self, settings):
@@ -40,5 +42,8 @@ class App(cyclone.web.Application):
             handlers.append((r"/publish", PublishHandler))
 
         self.broker = broker(settings)
-        cyclone.web.Application.__init__(self, handlers)
 
+        if settings['export'] and settings['export'] == 'graphite':
+            graphite = GraphiteExport(self.broker, settings)
+
+        cyclone.web.Application.__init__(self, handlers)

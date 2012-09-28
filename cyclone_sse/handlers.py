@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import json
 import cyclone.web
 from cyclone.sse import SSEHandler
 
@@ -106,8 +107,13 @@ class StatsHandler(cyclone.web.RequestHandler):
     """
     current connection statistics
     """
+    def get_stats(self):
+        self.set_header("Content-Type", "application/json")
+        return json.dumps(self.application.broker.stats())
+
     def get(self):
-        self.write(str([(k, len(v)) for k, v in self.application.broker._channels.iteritems()]))
+        stats = self.get_stats()
+        self.write(stats)
         self.finish()
 
 
