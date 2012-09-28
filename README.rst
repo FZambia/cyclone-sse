@@ -185,6 +185,17 @@ cyclone.web.Application. So you can decide what handlers
 or brokers you need, write your own or extend existing
 from cyclone_sse.handlers and cyclone_sse.brokers.
 
+------------------------
+Export server statistics
+------------------------
+cyclone-sse has a possibility to send its state to graphite (http://graphite.wikidot.com/).
+Do make it do it just run::
+
+	twistd -n cyclone-sse --export=graphite --export-host=127.0.0.1 --export-port=33333 --export-path=graphite.prefix.for.stats
+	
+Of course, use correct graphite HOST and PORT values
+
+
 ------------
 Known Issues
 ------------
