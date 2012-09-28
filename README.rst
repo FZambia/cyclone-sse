@@ -188,8 +188,8 @@ from cyclone_sse.handlers and cyclone_sse.brokers.
 ------------------------
 Export server statistics
 ------------------------
-cyclone-sse has a possibility to send its state to graphite (http://graphite.wikidot.com/).
-Do make it do it just run::
+cyclone-sse has a possibility to send its state to ``graphite`` (http://graphite.wikidot.com/).
+To make it send stats to graphite just run cyclone-sse using following arguments::
 
 	twistd -n cyclone-sse --export=graphite --export-host=127.0.0.1 --export-port=33333 --export-path=graphite.prefix.for.stats
 	
