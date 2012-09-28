@@ -37,6 +37,7 @@ class Options(usage.Options):
     optParameters = [
         ["port", "p", 8888, "tcp port to listen on", int],
         ["listen", "l", "127.0.0.1", "interface to listen on"],
+
         ["app", "r", None, "custom application to run"],
 
         ["use-ssl", None, 0, "use ssl", int],
@@ -53,7 +54,7 @@ class Options(usage.Options):
 
         ["redis-host", None, "127.0.0.1", "redis host"],
         ["redis-port", None, 6379, "redis port", int],
-        
+
         ["amqp-host", None, "127.0.0.1", "amqp broker's host"],
         ["amqp-port", None, 5672, "amqp broker's port", int],
         ["amqp-vhost", None, "/", "amqp broker's virtual host"],
@@ -64,10 +65,12 @@ class Options(usage.Options):
         ["amqp-exchange-type", None, "direct", "amqp exchange type"],
         ["amqp-channel", None, 1, "amqp channel number", int],
 
-        ["monitor", None, "", "server state monitoring mechanism (graphite)"],
-        ["monitor-period", None, 60, "period in seconds for state monitoring", int],
+        ["export", None, None, "server state export mechanism (graphite)"],
+        ["export-host", None, None, "export host"],
+        ["export-port", None, None, "export port", int],
+        ["export-interval", None, 60, "interval in seconds for state export", int],
+        ["export-path", None, "cyclone-sse", "export path"],
 
-        ["graphite-url", None, "", "graphite server url address"],
     ]
 
 

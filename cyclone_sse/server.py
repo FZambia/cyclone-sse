@@ -23,7 +23,7 @@ from cyclone_sse.brokers import HttpBroker
 from cyclone_sse.brokers import RedisBroker
 from cyclone_sse.brokers import AmqpBroker
 
-from cyclone_sse.periodic import UdpExport
+from cyclone_sse.periodic import GraphiteExport
 
 
 class App(cyclone.web.Application):
@@ -43,6 +43,7 @@ class App(cyclone.web.Application):
 
         self.broker = broker(settings)
 
-        graphite = UdpExport(self.broker, '127.0.0.1', 8000, 30)
+        if settings['export'] and settings['export'] == 'graphite':
+            graphite = GraphiteExport(self.broker, settings)
 
         cyclone.web.Application.__init__(self, handlers)
