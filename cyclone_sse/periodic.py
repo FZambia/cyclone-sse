@@ -29,7 +29,6 @@ class UdpExport(DatagramProtocol):
         data = self.broker.stats()
         if data:
             prepared_data = self.prepare(data)
-            print prepared_data
             self.transport.write(prepared_data)
 
     def prepare(self, data):
