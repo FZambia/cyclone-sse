@@ -82,6 +82,10 @@ Just create such file, fill it with correct option values and run cyclone-sse::
 	twistd -n cyclone-sse `cat cyclone-sse.conf`
 
 
+EventSource does not support CORS (Cross Origin Resource Sharing) in all web-browsers.
+So you need to proxy connections to cyclone-sse server to make EventSource believe
+that you make connection to the same domain.
+
 If your main server in behind Nginx you should proxy SSE like this::
 
     location /sse/ {
