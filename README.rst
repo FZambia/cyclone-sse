@@ -87,7 +87,7 @@ If your main server in behind Nginx you should proxy SSE like this::
     location /sse/ {
         rewrite                 ^(.*)$ / break; # to root of our tornado
         proxy_buffering         off; # to push immediately
-        proxy_pass              http://127.0.0.1:8888;
+        proxy_pass              http://127.0.0.1:8888; # proxy /sse/ requests to our cyclone-sse server to avoid cross domain problems
     }
 
 
