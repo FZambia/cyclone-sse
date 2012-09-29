@@ -45,8 +45,6 @@ class Options(usage.Options):
         ["ssl-listen", None, "127.0.0.1", "interface to listen on for ssl"],
         ["ssl-cert", None, "server.crt", "ssl certificate"],
         ["ssl-key", None, "server.key", "ssl server key"],
-        ["ssl-app", None, None, "ssl application (same as --app)"],
-        ["ssl-appopts", None, None, "arguments to the ssl application"],
 
         ["broker", None, "http", "publish provider"],
 
