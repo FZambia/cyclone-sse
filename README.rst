@@ -74,6 +74,14 @@ production, with all the basic features of standard daemons::
            cyclone-sse --port=8080 --listen=0.0.0.0
 
 
+
+You can think that you need too many cyclone-sse options to pass them as command line arguments.
+In this case you may want to use this `configuration file <https://github.com/FZambia/cyclone-sse/blob/master/extras/cyclone-sse.conf>`_.
+Just create such file, fill it with correct option values and run cyclone-sse::
+
+	twistd -n cyclone-sse `cat cyclone-sse.conf`
+
+
 If your main server in behind Nginx you should proxy SSE like this::
 
     location /sse/ {
