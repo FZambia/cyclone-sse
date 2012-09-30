@@ -88,7 +88,7 @@ class BroadcastHandler(ExtendedSSEHandler):
 
     def bind(self):
         """
-        called when new connection established 
+        called when new connection established
         """
         log.msg(self.request.headers)
         self.authorize()
@@ -131,6 +131,6 @@ class PublishHandler(cyclone.web.RequestHandler):
         if channel and message:
             self.application.broker.publish(channel, message)
             self.set_header("Content-Type", "application/json")
-            self.write({'status':'ok'})
+            self.write({'status': 'ok'})
         else:
             return cyclone.web.HTTPError(400)

@@ -45,7 +45,8 @@ class Broker(object):
         self.connect(settings)
 
     def connect(self, settings):
-        raise NotImplementedError('please, provide implementation for connect method')
+        raise NotImplementedError(
+            'please, provide implementation for connect method')
 
     def stats(self):
         return [(k, len(v)) for k, v in self._channels.iteritems()]
@@ -79,7 +80,8 @@ class Broker(object):
         for channel in client.channels:
             self._subscribe(channel)
             self._channels[channel][client.uid] = 1
-            log.msg("Client %s subscribed to %s" % (client.request.remote_ip, channel))
+            log.msg("Client %s subscribed to %s" % (
+                client.request.remote_ip, channel))
 
         self.send_cache(client)
 
@@ -114,10 +116,12 @@ class Broker(object):
             self._unsubscribe(channel)
 
     def subscribe(self, channel):
-        raise NotImplementedError('please, provide implementation for subscribe method')
+        raise NotImplementedError(
+            'please, provide implementation for subscribe method')
 
     def unsubscribe(self, channel):
-        raise NotImplementedError('please, provide implementation for unsubscribe method')
+        raise NotImplementedError(
+            'please, provide implementation for unsubscribe method')
 
     def broadcast(self, pattern, channel, message):
         """
@@ -129,7 +133,7 @@ class Broker(object):
 
         if clients:
             args = (str(len(clients)), pattern, channel, message)
-            log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)            
+            log.msg('BROADCASTING to %s clients: pattern: %s, channel: %s, message: %s' % args)
 
             # put this message into cache
             eid = str(uuid.uuid4())
@@ -239,7 +243,7 @@ class RedisBroker(Broker):
         qf.broker = self
         qf.maxDelay = 20
         qf.protocol = RedisBroadcastProtocol
-        reactor.connectTCP(settings["redis-host"], settings["redis-port"], qf) 
+        reactor.connectTCP(settings["redis-host"], settings["redis-port"], qf)
 
     def is_pattern_blocked(self, pattern):
         return pattern in ['unsubscribe', 'subscribe']
@@ -267,7 +271,7 @@ class AmqpBroadcastProtocol(AmqpSubscriberProtocol):
         # If we lost connection during operation, we
         # re-subscribe to all channels once the connection is re-established.
         for channel in self.factory.broker._channels:
-            self.factory.broker._subscribe(channel)   
+            self.factory.broker._subscribe(channel)
 
     def connectionLost(self, why):
         self.factory.broker._source = None
@@ -281,8 +285,10 @@ class AmqpBroker(Broker):
                                    vhost=settings["amqp-vhost"],
                                    username=settings["amqp-username"],
                                    password=settings["amqp-password"],
-                                   exchange_name=settings["amqp-exchange-name"],
-                                   exchange_type=settings["amqp-exchange-type"],
+                                   exchange_name=settings[
+                                       "amqp-exchange-name"],
+                                   exchange_type=settings[
+                                       "amqp-exchange-type"],
                                    channel=settings["amqp-channel"])
         qf.broker = self
         qf.protocol = AmqpBroadcastProtocol

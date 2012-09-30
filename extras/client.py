@@ -1,5 +1,5 @@
 from twisted.internet.protocol import Protocol
-from twisted.web.client import Agent,  HTTPConnectionPool
+from twisted.web.client import Agent, HTTPConnectionPool
 from twisted.internet import reactor, defer
 from twisted.web.http_headers import Headers
 import random
@@ -39,7 +39,7 @@ def http_get(channel):
     df = agent.request(
         'GET',
         '%s?channels=%s&channels=general' % (URL, channel),
-        Headers({'User-Agent': ['twisted-monitor'],       
+        Headers({'User-Agent': ['twisted-monitor'],
                 'Origin': ['http://localhost:8000'],
                 'Accept-Language': ['ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3'],
                 'Accept-Encoding': ['gzip, deflate'],
@@ -49,7 +49,7 @@ def http_get(channel):
                 'Referer': ['http://localhost:8000/'],
                 'Pragma': ['no-cache'],
                 'Cache-Control': ['no-cache']}
-        ),
+                ),
         None
     )
     return df
@@ -75,15 +75,16 @@ def error(err):
 
 
 if __name__ == '__main__':
-    channels = ['base', 'extras', 'cats', 'dogs']       
+    channels = ['base', 'extras', 'cats', 'dogs']
     c = NUM // CON
     all = 0
+
     def connect(c):
         global all
         if c == 0:
             return True
         for i in range(CON):
-            all+=1
+            all += 1
             channel = random.choice(channels)
             df = http_get(channel)
             df.addCallback(cbRequest)

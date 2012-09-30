@@ -9,7 +9,8 @@ import json
 
 queue_name = sys.argv[1]
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
 
 channel.exchange_declare(exchange='sse-cyclone-server',

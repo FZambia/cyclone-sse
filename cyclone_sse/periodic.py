@@ -4,8 +4,10 @@ from twisted.internet import task
 import json
 import time
 
+
 class ImproperlyConfigured(Exception):
     pass
+
 
 class UdpExport(DatagramProtocol):
 
@@ -17,7 +19,7 @@ class UdpExport(DatagramProtocol):
         self.path = settings['export-path']
         if not self.broker or not self.host or not self.port:
             raise ImproperlyConfigured("not enough arguments for \
-                                        periodic stats export") 
+                                        periodic stats export")
         reactor.listenUDP(0, self)
 
     def startProtocol(self):
@@ -53,4 +55,3 @@ class GraphiteExport(UdpExport):
 
         message = '\n'.join(lines) + '\n'
         return message
-        

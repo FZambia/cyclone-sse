@@ -35,7 +35,7 @@ class AmqpSubscriberProtocol(AMQClient):
         self.connected = 1
         self.channelReady()
         self.factory.addConnection(self)
-        
+
     def channelReady(self):
         pass
 
@@ -76,11 +76,12 @@ class AmqpSubscriberProtocol(AMQClient):
     def consume(self, routing_key):
         # declaring exchange
         try:
-            yield self.chan.exchange_declare(exchange=self.factory.exchange_name,
-                                             type=self.factory.exchange_type)
+            yield self.chan.exchange_declare(
+                exchange=self.factory.exchange_name,
+                type=self.factory.exchange_type)
         except Exception, e:
             log.err(e)
-            defer.returnValue(None)    
+            defer.returnValue(None)
 
         # declaring queue
         try:
@@ -97,7 +98,7 @@ class AmqpSubscriberProtocol(AMQClient):
                                        routing_key=routing_key)
         except Exception, e:
             log.err(e)
-            defer.returnValue(None)    
+            defer.returnValue(None)
 
         # subscribing on queue
         try:
@@ -152,7 +153,7 @@ class AmqpSubscriberFactory(protocol.ReconnectingClientFactory):
 
     def buildProtocol(self, addr):
         p = self.protocol(self.delegate, self.vhost, self.spec)
-        p.factory = self # Tell the protocol about this factory.
+        p.factory = self  # Tell the protocol about this factory.
         # Reset the reconnection delay since we're connected now.
         self.resetDelay()
         return p
