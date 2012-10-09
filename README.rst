@@ -123,13 +123,87 @@ in browser::
 	</html>
 
 
-This is a bit naive example of client code. Use jquery.sse.js plugin to get more granular control on incoming events. I will provide more information soon.
+This is a bit naive example of client code. Use jquery.sse.js plugin to get more granular control on incoming events.
+
+
+jQuery plugin for controling several types of events
+-----------------------------------------------------
+Now it is a time to go deeper. On your web page can be a lot of different
+stuff you want to update in realtime. For example, comments, notifications 
+about some user's action - login, logout..so many as you can imagine. In this
+case you would need a tool that helps to control all types of events. And
+this repo has such a tool. Here it is - https://github.com/FZambia/cyclone-sse/blob/master/media/jquery.sse.js
+
+This is a jquery plugin. Its job is to find all special DOM elements which
+describe channels we want to listen on this page. As it found such elements 
+plugin creates a SINGLE connection to cyclone SSE server. Moreover when any 
+event appears it triggers corresponding DOM element - so you can process easily
+process it.
+
+Lets see how it looks in a web page code::
+
+	<!DOCTYPE html>
+	<html lang="en">
+	        <head>
+	                <meta charset="utf-8"/>
+	                <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	                <script type="text/javascript" src="https://raw.github.com/FZambia/cyclone-sse/master/media/jquery.eventsource.js"></script>
+	                <script type="text/javascript" src="https://raw.github.com/FZambia/cyclone-sse/master/media/jquery.sse.js"></script>
+	                <script type="text/javascript">
+	                        $(function(){
+					// create custom prefix for all sse events
+					var sseEventPrefix = 'sse.';
 	
-We use an extremely modified `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_.
+					// activate sse plugin to collect channels and to make a single connection to the server
+	                                $.sse({selector: '.sse', debug: true, eventPrefix: sseEventPrefix});
+					
+					// bind our sse event to general handler
+					var generalHandler = $('#general_handler');
+					var generalEvent = sseEventPrefix + generalHandler.attr("data-sse-channels");
+					generalHandler.on(generalEvent, function(event, data){
+						console.log(data);
+						// here should be your code
+					});
+	
+					// bind sse event to weather handler
+					var weatherHandler = $('#weather_handler');
+					var weatherEvent = sseEventPrefix + weatherHandler.attr("data-sse-channels");
+					weatherHandler.on(weatherEvent, function(event, data){
+						console.log(data);
+						// here should be your code that redraws weather forecast
+					});
+					
+	                        })
+	                </script>
+	        </head>
+	        <body>
+			<div class="sse" id="general_handler" data-sse-channels="general_channel" style="display:none;">&nbsp;</div>	
+	                <div class="sse" id="weather_handler" data-sse-channels="weather_channel" style="display:none;">&nbsp;</div>	
+	        </body>
+	</html>
+
+
+We created two handlers - one for general information about our web page and one for weather forecast.
+Also we use custom event prefix to avoid event name collapses. And finally we bind events in a usual 
+jquery way to those handlers. 
+
+Old browsers fallback
+----------------------
+This project uses an extremely modified `Rick Waldron's <https://github.com/rwldrn>`_ jQuery polyfill `jquery.eventsource <https://github.com/rwldrn/jquery.eventsource>`_.
 If browser does not natively support EventSource, then we use ``long-polling``, so it works nice even in Internet Explorer.
 
 
-To check that everything work fine with redis - open your web browser console, then go to redis console (``redis-cli``) and type::
+Check that everything works!
+-------------------------------
+
+If you are using default HTTP broker::
+
+	curl --dump-header - -X POST -d "message=%5B123%2C+124%5D&channel=base" http://localhost:8888/publish
+
+You published message ``[123, 124]`` into channel ``base``. Do not forget to encode your message as json!!
+
+
+To check that everything work fine with redis broker - open your web browser console, then go to redis console (``redis-cli``) and type::
 
 	publish base '[1, 2, 3]'
 	
@@ -137,19 +211,6 @@ You published message ``[1, 2, 3]`` into the channel ``base``.
 You should see an array in browser console (``debug`` option of sse jquery plugin must be ``true``).
 There is a moment to keep attention at: your message must be json encoded data - if you want to receive plain text then
 add ``'type': 'text'`` in jquery sse plugin initialization options.
-
-
-Or if you are using default HTTP broker::
-
-	curl --dump-header - -X POST -d "message=%5B123%2C+124%5D&channel=base" http://localhost:8888/publish
-
-You published message ``[123, 124]`` into channel ``base``. Do not forget to encode your message as json!!
-
-
-SSE provides a possibility to use custom Event type. This app does not use it, because some web browsers recognize only
-standard event type - ``message``. But it does not mean you can not use custom event types. All you need to do is, for example, to put your
-custom event type in the first place of message array. (``["your_event_type", "data"]``). In this way you can detect event type on
-client side and decide what to do with incoming message. This is a payment for crossbrowser compatibility.
 
 
 ----------------------------
@@ -211,6 +272,10 @@ Of course, use correct graphite HOST and PORT values
 ------------
 Known Issues
 ------------
+* SSE provides a possibility to use custom Event type. This app does not use it, because some web browsers recognize only
+standard event type - ``message``. But it does not mean you can not use custom event types. All you need to do is, for example, to put your
+custom event type in the first place of message array. (``["your_event_type", "data"]``). In this way you can detect event type on
+client side and decide what to do with incoming message. This is a payment for crossbrowser compatibility.
 
 * According to `http://stackoverflow.com/questions/7340784/easy-install-pyopenssl-error <http://stackoverflow.com/questions/7340784/easy-install-pyopenssl-error>`_
 their is no OpenSSL 0.9.8f distribution for ``CentOS 5``. So for CentOS 5 we use ``pyopenssl`` of version 0.12 (not latest)
