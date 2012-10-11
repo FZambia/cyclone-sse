@@ -75,7 +75,7 @@
 							console.log('sse connection opened');
 						}
 						handlers.each(function(index, element) {
-							jQuery(element).trigger('sse.open');
+							jQuery(element).trigger(options.eventPrefix + 'open');
 						});
 					},
 
@@ -85,7 +85,7 @@
 							console.log(msg);
 						}
 						handlers.each(function(index, element) {
-							jQuery(element).trigger('sse.error', err);
+							jQuery(element).trigger(options.eventPrefix + 'error', err);
 						});
 					},
 
