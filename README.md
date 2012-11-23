@@ -238,7 +238,7 @@ following format:
 ```
 
 * Redis
-This broker allows you to listen to Redis channels and broadcasts incoming messages. txRedisApi library is used for this.
+This broker allows you to listen to Redis channels and broadcasts incoming messages. This option is especially usefull if you decide to run multible instances of cyclone-sse server for load balancing. txRedisApi library is used for this.
 
 * AMQP
 Allows to listen AMQP toolkits, such as RabbitMQ, Qpid etc. In this case you should provide amqp specification XML file. txAMQP is used for this. You can 
