@@ -39,14 +39,14 @@ def http_get(channel):
     df = agent.request(
         'GET',
         '%s?channels=%s&channels=general' % (URL, channel),
-        Headers({'User-Agent': ['twisted-monitor'],
-                'Origin': ['http://localhost:8000'],
+        Headers({'User-Agent': ['cyclone-sse-client'],
+                #'Origin': ['http://localhost:8000'],
                 'Accept-Language': ['ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3'],
                 'Accept-Encoding': ['gzip, deflate'],
                 'Connection': ['keep-alive'],
                 'Accept': ['text/event-stream'],
-                'Host': ['192.168.1.34:8888'],
-                'Referer': ['http://localhost:8000/'],
+                #'Host': ['192.168.1.34:8888'],
+                #'Referer': ['http://localhost:8000/'],
                 'Pragma': ['no-cache'],
                 'Cache-Control': ['no-cache']}
                 ),
