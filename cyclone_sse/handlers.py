@@ -127,10 +127,10 @@ class PublishHandler(cyclone.web.RequestHandler):
         if secret_key and key != secret_key:
             raise cyclone.web.HTTPError(401)
         message = self.get_argument('message', None)
-        channel = self.get_argument("channel", None)
-        if channel and message:
-            self.application.broker.publish(channel, message)
+        channels = self.get_arguments("channel", None)
+        if channels and message:
+            self.application.broker.publish(channels, message)
             self.set_header("Content-Type", "application/json")
             self.write({'status': 'ok'})
         else:
-            return cyclone.web.HTTPError(400)
+            raise cyclone.web.HTTPError(400)

@@ -210,9 +210,10 @@ class HttpBroker(Broker):
     def unsubscribe(self, channel):
         pass
 
-    def publish(self, channel, message):
-        if channel in self._channels:
-            self.queue.put({'channel': channel, 'message': message})
+    def publish(self, channels, message):
+        for channel in channels:
+            if channel in self._channels:
+                self.queue.put({'channel': channel, 'message': message})
 
 
 class RedisBroadcastProtocol(cyclone.redis.SubscriberProtocol):
