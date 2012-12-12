@@ -142,7 +142,7 @@ this repo has such a tool. Here it is - https://github.com/FZambia/cyclone-sse/b
 
 This is a jquery plugin. Its job is to find all special DOM elements which
 describe channels we want to listen on this page. As it found such elements 
-plugin creates a SINGLE connection to cyclone SSE server. Moreover when any 
+plugin creates a SINGLE connection to cyclone SSE server (something like multiplexing - http://en.wikipedia.org/wiki/Multiplexing). Moreover when any 
 event appears it triggers corresponding DOM element - so you can process easily
 process it.
 
