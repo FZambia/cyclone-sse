@@ -34,7 +34,7 @@ setup(
     author_email="frvzmb@gmail.com",
     url="https://github.com/FZambia/cyclone-sse",
     license="http://www.apache.org/licenses/LICENSE-2.0",
-    description="EventSource (SSE, Server-Sent-Events) broadcasting server with channel support, Last-Event-Id etc, based on top of cyclone web server",
+    description="EventSource (SSE, Server-Sent Events) broadcasting server with channel support, Last-Event-Id etc, based on top of cyclone web server",
     keywords="python non-blocking twisted cyclone sse eventsource broadcast http redis amqp rabbitmq",
     packages=["cyclone_sse", "twisted.plugins"],
     **extra
