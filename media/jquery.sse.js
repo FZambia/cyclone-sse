@@ -30,23 +30,28 @@
 					return;
 				}
 				handlers.each(function(index, element) {
-					var handler = jQuery(element);
-					handler_channels = handler.attr(options.attr);
-					if (handler_channels.length) {
-						var channel_list = handler_channels.split(',')
-						for (i in channel_list) {
-							var c = jQuery.trim(channel_list[i]);
-
-							if (!( c in compliance)) {
-								compliance[c] = [];
-							}
-							compliance[c].push(handler);
-
-							if (jQuery.inArray(c, channels) === -1) {
-								channels.push(c);
-							}
-						}
-					}
+			          var handler = jQuery(element);
+			          handler_channels = handler.attr(options.attr);
+			          handler_events = handler.attr(options.eventAttr);
+			          if (handler_channels.length) {
+			            var channel_list = handler_channels.split(',')
+			            for (i in channel_list) {
+			              var c = jQuery.trim(channel_list[i]);
+			              if (jQuery.inArray(c, channels) === -1) {
+			                channels.push(c);
+			              }
+			            }
+			          }
+			          if (handler_events.length) {
+			            var event_list = handler_events.split(',');
+			            for (i in event_list) {
+			              var e = jQuery.trim(event_list[i]);
+			              if (!( e in compliance)) {
+			                compliance[e] = [];
+			              }
+			              compliance[e].push(handler);
+			            }
+			          }
 				});
 				if (channels.length === 0) {
 					if (options.debug === true) {
