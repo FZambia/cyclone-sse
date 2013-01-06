@@ -4,7 +4,8 @@
 			var defaults = {
 				url : '/sse/',
 				selector : '.sse',
-				attr : 'data-sse-channels',
+				channelAttr : 'data-sse-channels',
+				eventAttr: 'data-sse-events',
 				debug : false,
 				label : "default",
 				type : "json",
@@ -31,7 +32,7 @@
 				}
 				handlers.each(function(index, element) {
 			          var handler = jQuery(element);
-			          handler_channels = handler.attr(options.attr);
+			          handler_channels = handler.attr(options.channelAttr);
 			          handler_events = handler.attr(options.eventAttr);
 			          if (handler_channels.length) {
 			            var channel_list = handler_channels.split(',')
