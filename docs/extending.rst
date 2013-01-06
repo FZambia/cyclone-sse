@@ -31,4 +31,4 @@ Here is an example of code which allows to extend standard cyclone-sse behaviour
 
 Run server using ``-r`` option::
 
-	twistd cylone-sse -r "custom.App"
+	twistd -n cyclone-sse -r "custom.App"
