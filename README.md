@@ -185,7 +185,7 @@ Lets see how it looks in a web page code:
         </head>
         <body>
 		<div class="sse" id="general_handler" data-sse-channels="general_channel" data-sse-events="general_channel" style="display:none;">&nbsp;</div>	
-                <div class="sse" id="weather_handler" data-sse-channels="weather_channel" data-sse-events="weather_channel" style="display:none;">&nbsp;</div>	
+		<div class="sse" id="weather_handler" data-sse-channels="weather_channel" data-sse-events="weather_channel" style="display:none;">&nbsp;</div>	
         </body>
 </html>
 ```
