@@ -34,7 +34,7 @@
 			          var handler = jQuery(element);
 			          handler_channels = handler.attr(options.channelAttr);
 			          handler_events = handler.attr(options.eventAttr);
-			          if (handler_channels.length) {
+			          if (handler_channels && handler_channels.length) {
 			            var channel_list = handler_channels.split(',')
 			            for (i in channel_list) {
 			              var c = jQuery.trim(channel_list[i]);
@@ -43,7 +43,7 @@
 			              }
 			            }
 			          }
-			          if (handler_events.length) {
+			          if (handler_events && handler_events.length) {
 			            var event_list = handler_events.split(',');
 			            for (i in event_list) {
 			              var e = jQuery.trim(event_list[i]);
