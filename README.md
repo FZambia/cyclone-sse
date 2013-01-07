@@ -166,7 +166,7 @@ Lets see how it looks in a web page code:
 				
 				// bind our sse event to general handler
 				var generalHandler = $('#general_handler');
-				var generalEvent = sseEventPrefix + generalHandler.attr("data-sse-channels");
+				var generalEvent = sseEventPrefix + generalHandler.attr("data-sse-events");
 				generalHandler.on(generalEvent, function(event, data){
 					console.log(data);
 					// here should be your code
@@ -174,7 +174,7 @@ Lets see how it looks in a web page code:
 
 				// bind sse event to weather handler
 				var weatherHandler = $('#weather_handler');
-				var weatherEvent = sseEventPrefix + weatherHandler.attr("data-sse-channels");
+				var weatherEvent = sseEventPrefix + weatherHandler.attr("data-sse-events");
 				weatherHandler.on(weatherEvent, function(event, data){
 					console.log(data);
 					// here should be your code that redraws weather forecast
@@ -184,8 +184,8 @@ Lets see how it looks in a web page code:
                 </script>
         </head>
         <body>
-		<div class="sse" id="general_handler" data-sse-channels="general_channel" style="display:none;">&nbsp;</div>	
-                <div class="sse" id="weather_handler" data-sse-channels="weather_channel" style="display:none;">&nbsp;</div>	
+		<div class="sse" id="general_handler" data-sse-channels="general_channel" data-sse-events="general_channel" style="display:none;">&nbsp;</div>	
+                <div class="sse" id="weather_handler" data-sse-channels="weather_channel" data-sse-events="weather_channel" style="display:none;">&nbsp;</div>	
         </body>
 </html>
 ```
