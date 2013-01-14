@@ -3,6 +3,8 @@ CYCLONE SSE
 
 inspired by [Sergey Trofimov's] (https://github.com/truetug) [tornado_sse] (https://github.com/truetug/tornado-sse>)
 
+An example of using this with Django can be found in [django-realtime-playground](https://github.com/FZambia/django-realtime-playground) repo.
+
 Overview
 --------
 
