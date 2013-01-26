@@ -272,7 +272,9 @@ In this case you can run cyclone-sse plugin
 with option --app that allows you to use your own
 cyclone.web.Application. So you can decide what handlers
 or brokers you need, write your own or extend existing
-from cyclone_sse.handlers and cyclone_sse.brokers.
+from cyclone_sse.handlers and cyclone_sse.brokers. Example can 
+be found [here](https://github.com/FZambia/cyclone-sse/blob/master/docs/extending.rst) or in 
+[django realtime playground repo](https://github.com/FZambia/django-realtime-playground/blob/master/cyclone-eventsource/app.py)
 
 
 Export server statistics
