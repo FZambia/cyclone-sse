@@ -26,6 +26,31 @@ else:
     from setuptools import setup
     extra = dict(install_requires=requires)
 
+    try:
+        from setuptools.command import egg_info
+        egg_info.write_toplevel_names
+    except (ImportError, AttributeError):
+        pass
+    else:
+        """
+        'twisted' should not occur in the top_level.txt file as this 
+        triggers a bug in pip that removes all of twisted when a package
+        with a twisted plugin is removed.
+        """
+        def _top_level_package(name):
+            return name.split('.', 1)[0]
+    
+        def _hacked_write_toplevel_names(cmd, basename, filename):
+            pkgs = dict.fromkeys(
+                [_top_level_package(k)
+                    for k in cmd.distribution.iter_distribution_names()
+                    if _top_level_package(k) != "twisted"
+                ]
+            )
+            cmd.write_file("top-level names", filename, '\n'.join(pkgs) + '\n')
+    
+        egg_info.write_toplevel_names = _hacked_write_toplevel_names
+
 
 setup(
     name="cyclone-sse",
