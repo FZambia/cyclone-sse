@@ -1,7 +1,7 @@
 %define __prefix /opt
 %define __spec_install_post /usr/lib/rpm/brp-compress || :
 %define __git https://github.com/FZambia/cyclone-sse.git
-%define __descr "exchange-intranet sync daemon"
+%define __descr "Server-Sent Events (EventSource) broadcasting server based on top of cyclone web server"
 
 Name: cyclone_sse
 Summary: %{__descr}
