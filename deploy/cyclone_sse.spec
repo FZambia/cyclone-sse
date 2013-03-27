@@ -86,6 +86,7 @@ rm -rf %{buildroot}
 
 %preun
 find %{__prefix}/%{name}/ -type f -name "*.py[co]" -delete
+find %{__prefix}/%{name}/ -type f -name "dropin.cache" -delete
 
 
 %files
