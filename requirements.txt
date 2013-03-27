@@ -1,6 +1,5 @@
-Twisted>=12.2.0
-cyclone==1.0
+Twisted>=12.3.0
+cyclone==1.1
 pyOpenSSL==0.13
 txAMQP==0.6.1
 wsgiref==0.1.2
-zope.interface==4.0.1
