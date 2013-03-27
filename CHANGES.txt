@@ -1,6 +1,10 @@
 CYCLONE SSE CHANGES
 ===================
 
+0.7.5
+-----
+* ability to publish into multiple channels for HTTP publish handler
+
 0.7.4
 -----
 * server statistics export to graphite
