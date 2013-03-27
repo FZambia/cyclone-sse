@@ -5,7 +5,7 @@
 				url : '/sse/',
 				selector : '.sse',
 				channelAttr : 'data-sse-channels',
-				eventAttr: 'data-sse-events',
+				eventAttr : 'data-sse-events',
 				debug : false,
 				label : "default",
 				type : "json",
@@ -31,28 +31,28 @@
 					return;
 				}
 				handlers.each(function(index, element) {
-			          var handler = jQuery(element);
-			          handler_channels = handler.attr(options.channelAttr);
-			          handler_events = handler.attr(options.eventAttr);
-			          if (handler_channels && handler_channels.length) {
-			            var channel_list = handler_channels.split(',')
-			            for (i in channel_list) {
-			              var c = jQuery.trim(channel_list[i]);
-			              if (jQuery.inArray(c, channels) === -1) {
-			                channels.push(c);
-			              }
-			            }
-			          }
-			          if (handler_events && handler_events.length) {
-			            var event_list = handler_events.split(',');
-			            for (i in event_list) {
-			              var e = jQuery.trim(event_list[i]);
-			              if (!( e in compliance)) {
-			                compliance[e] = [];
-			              }
-			              compliance[e].push(handler);
-			            }
-			          }
+					var handler = jQuery(element);
+					handler_channels = handler.attr(options.channelAttr);
+					handler_events = handler.attr(options.eventAttr);
+					if (handler_channels && handler_channels.length) {
+						var channel_list = handler_channels.split(',')
+						for (i in channel_list) {
+							var c = jQuery.trim(channel_list[i]);
+							if (jQuery.inArray(c, channels) === -1) {
+								channels.push(c);
+							}
+						}
+					}
+					if (handler_events && handler_events.length) {
+						var event_list = handler_events.split(',');
+						for (i in event_list) {
+							var e = jQuery.trim(event_list[i]);
+							if (!( e in compliance)) {
+								compliance[e] = [];
+							}
+							compliance[e].push(handler);
+						}
+					}
 				});
 				if (channels.length === 0) {
 					if (options.debug === true) {
@@ -88,7 +88,7 @@
 					error : function(err) {
 						if (options.debug === true) {
 							console.log('sse connection error');
-							console.log(msg);
+							console.log(err);
 						}
 						handlers.each(function(index, element) {
 							jQuery(element).trigger(options.eventPrefix + 'error', err);
