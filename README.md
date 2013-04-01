@@ -32,7 +32,7 @@ Let's describe on example one of possible use cases::
 
 ```
 1) Your web application's visitor opens a page. Let it be a text translation
-of new Apple iPhone 6 presentation or, if you do not like Apple, Samsung Galaxy S4.
+of new Apple iPhone 6 presentation or, if you do not like Apple, Samsung Galaxy S5.
 Javascript creates EventSource object and establishes connection with our cyclone
 server. In GET parameters of url to connect we provide a channel name we want 
 to listen to.
