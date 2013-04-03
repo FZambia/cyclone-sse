@@ -14,6 +14,15 @@
 
 			var options = jQuery.extend(defaults, options);
 
+			function generate_uuid () {
+				// generate uuid to append to GET params of connection url
+				// this helps to avoid problems with Chrome behaviour
+				return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+				    return v.toString(16);
+				});
+			};
+
 			function init() {
 				if (!jQuery.eventsource) {
 					console.log("jquery eventsource polyfill not found");
@@ -63,7 +72,8 @@
 
 				// make appropriate query
 				var query = jQuery.param({
-					'channels' : channels
+					'channels' : channels,
+					'uuid': generate_uuid()
 				}, true);
 				if (options.debug === true) {
 					console.log('sse url: ' + options.url + '?' + query);
