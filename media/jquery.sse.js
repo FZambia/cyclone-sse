@@ -16,7 +16,8 @@
 
 			function generate_uuid () {
 				// generate uuid to append to GET params of connection url
-				// this helps to avoid problems with Chrome behaviour
+				// this helps to avoid problems with Chrome behaviour - 
+				// it seems that it caches connections
 				return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 				    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 				    return v.toString(16);
