@@ -73,7 +73,6 @@ mkdir -p %{buildroot}%{_sysconfdir}/%{name}
 %post
 if [ $1 -gt 1 ]; then
     echo "Upgrade"
-    find %{__prefix}/%{name}/ -type f -name "*.py[co]" -delete
     service %{name} restart
 else
     echo "Installation completed, now edit config file and then start service"
