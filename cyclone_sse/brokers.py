@@ -89,6 +89,10 @@ class Broker(object):
         """
         unregisters client
         """
+        if not hasattr(client, 'uid'):
+            # was not added yet
+            return
+
         if client.uid in self._clients:
             del self._clients[client.uid]
             client.del_ping()
