@@ -33,13 +33,13 @@ else:
         pass
     else:
         """
-        'twisted' should not occur in the top_level.txt file as this 
+        'twisted' should not occur in the top_level.txt file as this
         triggers a bug in pip that removes all of twisted when a package
         with a twisted plugin is removed.
         """
         def _top_level_package(name):
             return name.split('.', 1)[0]
-    
+
         def _hacked_write_toplevel_names(cmd, basename, filename):
             pkgs = dict.fromkeys(
                 [_top_level_package(k)
@@ -48,13 +48,13 @@ else:
                 ]
             )
             cmd.write_file("top-level names", filename, '\n'.join(pkgs) + '\n')
-    
+
         egg_info.write_toplevel_names = _hacked_write_toplevel_names
 
 
 setup(
     name="cyclone-sse",
-    version="0.7.5",
+    version="0.7.6",
     author="Alexandr Emelin",
     author_email="frvzmb@gmail.com",
     url="https://github.com/FZambia/cyclone-sse",
