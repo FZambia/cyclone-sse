@@ -26,6 +26,22 @@ from twisted.python import log
 
 class ExtendedSSEHandler(SSEHandler):
 
+    @defer.inlineCallbacks
+    def _execute(self, transforms, *args, **kwargs):
+        self._transforms = []  # transforms
+        if self.settings.get("debug"):
+            log.msg("SSE connection from %s" % self.request.remote_ip)
+        self.set_header("Content-Type", "text/event-stream")
+        self.set_header("Cache-Control", "no-cache")
+        self.set_header("Connection", "keep-alive")
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.request.connection.setRawMode()
+        self.notifyFinish().addCallback(self.on_connection_closed)
+        try:
+            yield self.bind()
+        except Exception as e:
+            self._handle_request_exception(e)
+
     def reset_ping(self):
         self.del_ping()
         self.set_ping()
@@ -65,16 +81,8 @@ class ExtendedSSEHandler(SSEHandler):
 
 class BroadcastHandler(ExtendedSSEHandler):
 
-    sse_headers = {
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*'
-    }
-
     def initialize(self):
-        for name, value in self.sse_headers.iteritems():
-            self.set_header(name, value)
+        pass
 
     def get_channels(self):
         """
@@ -84,17 +92,21 @@ class BroadcastHandler(ExtendedSSEHandler):
         return channels
 
     def authorize(self):
-        pass
+        return defer.succeed(True)
 
+    @defer.inlineCallbacks
     def bind(self):
         """
         called when new connection established
         """
         log.msg(self.request.headers)
-        self.authorize()
+        auth = yield self.authorize()
+        if not auth:
+            raise cyclone.web.HTTPError(401)
+        self.application.broker.add_client(self)
+        self.flush()
         self.write('\n\n')
         self.flush()
-        self.application.broker.add_client(self)
 
     def unbind(self):
         """
