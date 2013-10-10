@@ -58,6 +58,12 @@ class Broker(object):
             if self._source:
                 self.subscribe(channel)
 
+    def _resubscribe(self, channel):
+        if channel in self._channels:
+            log.msg("Re-subscribing entire server to %s" % channel)
+            if self._source:
+                self.subscribe(channel)
+
     def _unsubscribe(self, channel):
         if channel in self._channels:
             del self._channels[channel]
@@ -232,7 +238,7 @@ class RedisBroadcastProtocol(cyclone.redis.SubscriberProtocol):
         # If we lost connection with Redis during operation, we
         # re-subscribe to all channels once the connection is re-established.
         for channel in self.factory.broker._channels:
-            self.factory.broker._subscribe(channel)
+            self.factory.broker._resubscribe(channel)
 
     def connectionLost(self, why):
         self.factory.broker._source = None
