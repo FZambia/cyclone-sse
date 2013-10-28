@@ -109,7 +109,34 @@ Also read [this](https://github.com/FZambia/cyclone-sse/blob/master/docs/nginx.r
 Client side
 -----------
 
-in browser:
+On the client side, you connect to your URL / with one or more `channels` query
+parameters. With EventSource, you'd to that like this:
+
+```html
+<!doctype html>
+<meta charset=utf-8>
+<title>Title</title>
+
+<script>
+    sse = new EventSource('http://127.0.0.1:8888/?channels=base')
+    sse.addEventListener('message', function(e) {
+        console.log("Got message", e.data)
+    })
+
+    /* Some helpful handler to have */
+    sse.addEventListener('open', function(e) {
+        console.info("Opened SSE connection")
+    })
+    sse.addEventListener('error', function(e) {
+        console.error("Failed to open SSE connection")
+    })
+</script>
+```
+
+jQuery plugin for controling several types of events
+-----------------------------------------------------
+
+Simple usage:
 
 ```html
 <!DOCTYPE html>
@@ -131,11 +158,6 @@ in browser:
 </html>
 ```
 
-This is a bit naive example of client code. Use jquery.sse.js plugin to get more granular control on incoming events.
-
-
-jQuery plugin for controling several types of events
------------------------------------------------------
 Now it is a time to go deeper. On your web page can be a lot of different
 stuff you want to update in realtime. For example, comments, notifications 
 about some user's action - login, logout..so many as you can imagine. In this
